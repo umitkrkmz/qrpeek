@@ -1,0 +1,18 @@
+# Opens update PRs for NuGet packages and GitHub Actions once a month.
+# Every update still has to pass tests.yml; size matters for QRPeek, so check
+# the release ZIP size before merging a package update.
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    groups:
+      test-packages:
+        patterns: ["xunit*", "Microsoft.NET.Test.Sdk"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

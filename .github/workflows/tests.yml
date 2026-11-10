@@ -1,0 +1,32 @@
+# Runs the test suite on every push to master and on pull requests, so a broken
+# commit is caught when it lands, not on release day.
+#
+# NOTE: Windows only. QRPeek is a WPF / .NET Framework 4.8 app; the tests use
+# GDI+ and WPF imaging, which only exist on Windows. The repo is public, so
+# standard GitHub-hosted runners cost no Actions minutes.
+name: Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    # Pinned rather than windows-latest: CI should only change when this file says so.
+    runs-on: windows-2025
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Show the .NET SDK
+        # The runner image ships a .NET SDK (8 or later is enough: the app
+        # itself targets .NET Framework 4.8, which is part of Windows).
+        run: dotnet --info
+
+      - name: Build and test
+        run: dotnet test QRPeek.sln -c Release

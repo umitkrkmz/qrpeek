@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Güvenlik açığı bildir / Report a security vulnerability
+    url: https://github.com/umitkrkmz/qrpeek/security/advisories/new
+    about: Lütfen açıkları herkese açık issue yerine buradan özel olarak bildirin. / Please report vulnerabilities privately here, not in a public issue.
+  - name: Gizlilik politikası / Privacy policy
+    url: https://github.com/umitkrkmz/qrpeek/blob/master/docs/PRIVACY.md
+    about: QRPeek hangi veriyi nerede tutar, ağa ne zaman çıkar. / What QRPeek keeps where, and when it uses the network.

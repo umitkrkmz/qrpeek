@@ -1,0 +1,68 @@
+<Window x:Class="QRPeek.UI.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:QRPeek"
+        Style="{StaticResource WindowBase}"
+        Title="{x:Static local:S.Settings}" Width="480" SizeToContent="Height"
+        ResizeMode="NoResize" WindowStartupLocation="CenterScreen"
+        Icon="pack://application:,,,/Assets/QRPeek.ico">
+    <StackPanel Margin="22,20,22,18">
+        <TextBlock Text="{x:Static local:S.SetHotkey}" Style="{StaticResource SectionTitle}" />
+        <WrapPanel x:Name="HotkeyChoices" />
+        <TextBlock x:Name="HotkeyError" Text="{x:Static local:S.HotkeyTaken}" Foreground="{DynamicResource Bad}" FontSize="12.5"
+                   Visibility="Collapsed" Margin="0,0,0,6" />
+
+        <TextBlock Text="{x:Static local:S.SetSendHotkey}" Style="{StaticResource SectionTitle}" Margin="0,10,0,6" />
+        <WrapPanel x:Name="SendHotkeyChoices" />
+        <TextBlock x:Name="SendHotkeyError" Text="{x:Static local:S.HotkeyTaken}" Foreground="{DynamicResource Bad}" FontSize="12.5"
+                   Visibility="Collapsed" Margin="0,0,0,6" />
+
+        <StackPanel Margin="0,14,0,0">
+            <CheckBox x:Name="AutoCopy" Content="{x:Static local:S.SetAutoCopy}" Click="OnOptionChanged" />
+            <CheckBox x:Name="KeepHistory" Content="{x:Static local:S.SetHistory}" Click="OnOptionChanged" />
+            <CheckBox x:Name="Watch" Click="OnWatchChanged">
+                <StackPanel>
+                    <TextBlock Text="{x:Static local:S.SetWatch}" />
+                    <TextBlock Text="{x:Static local:S.SetWatchNote}" Style="{StaticResource Muted}" Margin="0,2,0,0" />
+                </StackPanel>
+            </CheckBox>
+            <CheckBox x:Name="Startup" Content="{x:Static local:S.SetStartup}" Click="OnStartupChanged" />
+            <TextBlock x:Name="StartupNote" Style="{StaticResource Muted}" Visibility="Collapsed" Margin="30,-6,0,10" />
+            <CheckBox x:Name="CheckUpdates" Content="{x:Static local:S.SetCheckUpdates}" Click="OnCheckUpdatesChanged" />
+        </StackPanel>
+
+        <TextBlock Text="{x:Static local:S.SetLanguage}" Style="{StaticResource SectionTitle}" Margin="0,8,0,6" />
+        <WrapPanel>
+            <RadioButton x:Name="LangAuto" Style="{StaticResource Pill}" GroupName="Lang" Content="{x:Static local:S.LangAuto}" Tag="auto" Click="OnLanguage" />
+            <RadioButton x:Name="LangTr" Style="{StaticResource Pill}" GroupName="Lang" Content="Türkçe" Tag="tr" Click="OnLanguage" />
+            <RadioButton x:Name="LangEn" Style="{StaticResource Pill}" GroupName="Lang" Content="English" Tag="en" Click="OnLanguage" />
+        </WrapPanel>
+        <TextBlock x:Name="LangNote" Text="{x:Static local:S.LangRestart}" Style="{StaticResource Muted}" Visibility="Collapsed" />
+
+        <Border Style="{StaticResource Card}" Margin="0,18,0,0">
+            <StackPanel>
+                <DockPanel>
+                    <TextBlock x:Name="VersionText" DockPanel.Dock="Right" Style="{StaticResource Muted}" VerticalAlignment="Center" />
+                    <TextBlock Text="{x:Static local:S.About}" FontWeight="SemiBold" />
+                </DockPanel>
+                <TextBlock Text="{x:Static local:S.AboutText}" Style="{StaticResource Muted}" Margin="0,6,0,10" />
+                <WrapPanel>
+                    <Button Content="{x:Static local:S.SourceCode}" Click="OnSource" Margin="0,0,8,8" />
+                    <Button Content="{x:Static local:S.ThirdParty}" Click="OnNotices" Margin="0,0,8,8" />
+                    <Button Content="{x:Static local:S.PrivacyPolicy}" Click="OnPrivacy" Margin="0,0,0,8" />
+                </WrapPanel>
+                <DockPanel x:Name="UpdateRow" Margin="0,10,0,0">
+                    <Button x:Name="CheckNowButton" DockPanel.Dock="Left" Content="{x:Static local:S.CheckUpdatesNow}" Click="OnCheckNow" Margin="0,0,10,0" />
+                    <Button x:Name="UpdateDownload" DockPanel.Dock="Right" Style="{StaticResource Primary}" Content="{x:Static local:S.Download}"
+                            Click="OnUpdateDownload" Visibility="Collapsed" Padding="12,4" Margin="10,0,0,0" />
+                    <TextBlock x:Name="UpdateStatus" Style="{StaticResource Muted}" VerticalAlignment="Center" />
+                </DockPanel>
+            </StackPanel>
+        </Border>
+
+        <DockPanel Margin="0,16,0,0" LastChildFill="False">
+            <Button DockPanel.Dock="Left" Click="OnQuit" Foreground="{DynamicResource Bad}" Content="{x:Static local:S.Quit}" />
+            <Button DockPanel.Dock="Right" Style="{StaticResource Primary}" Content="{x:Static local:S.Close}" Click="OnClose" IsCancel="True" />
+        </DockPanel>
+    </StackPanel>
+</Window>

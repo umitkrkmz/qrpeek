@@ -1,0 +1,28 @@
+name: Özellik önerisi / Feature request
+description: Bir fikir veya iyileştirme önerin. / Suggest an idea or improvement.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        QRPeek bilerek küçük tutuluyor: ekrandaki QR'ı okumak, QR oluşturmak ve bunlara yakın işler. Önerinin bu çerçevede nasıl durduğunu anlatırsanız çok yardımcı olur.
+        QRPeek is kept small on purpose: reading QR codes on screen, creating them, and things close to that. It helps a lot if you explain how the idea fits.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Hangi ihtiyacı karşılıyor? / What need does this address?
+      description: Çözmeye çalıştığınız asıl problemi anlatın, doğrudan çözümü değil. / Describe the underlying problem, not just the solution.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Önerdiğiniz çözüm / Your proposed solution
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Şu an nasıl idare ediyorsunuz? / How do you manage today?
+      description: Varsa denediğiniz başka yollar veya uygulamalar. / Other ways or apps you've tried, if any.

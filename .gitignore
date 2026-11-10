@@ -1,0 +1,27 @@
+# .NET build output
+bin/
+obj/
+artifacts/
+*.user
+*.suo
+.vs/
+
+# Local packaging work: MSIX layout, Store images, test packages.
+# Release files go to GitHub Releases / Partner Center, not into the repo.
+build/
+dist/
+*.msix
+*.msixbundle
+*.appx
+*.appxbundle
+*.zip
+
+# Claude Code runtime state
+.claude/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,94 @@
+# Builds the portable ZIP (QRPeek-portable.zip) and publishes it whenever a
+# version tag (vX.Y.Z) is pushed.
+#
+# NOTE: the ZIP isn't byte-reproducible (timestamps), so its SHA256 is computed
+# here and written into the release notes; the README points there.
+# The Microsoft Store package (MSIX) is built and submitted separately.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  # NOTE: lets the build be tried from the Actions tab without cutting a
+  # release; the ZIP is then only a workflow artifact.
+  workflow_dispatch:
+
+permissions:
+  contents: write # required to create the release and upload the file
+
+jobs:
+  build:
+    # Pinned rather than windows-latest: the ZIP should only change when this file says so.
+    runs-on: windows-2025
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Work out the version
+        id: version
+        shell: pwsh
+        run: |
+          # NOTE: a tag must match <Version> in QRPeek.csproj exactly; a manual
+          # run builds whatever is there.
+          $code = ([xml](Get-Content src/QRPeek/QRPeek.csproj)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          if ("${{ github.ref }}" -like "refs/tags/v*") {
+            $tag = "${{ github.ref_name }}".Substring(1)
+            if ($tag -ne $code) { throw "tag v$tag doesn't match <Version> $code in QRPeek.csproj" }
+          }
+          "version=$code" >> $env:GITHUB_OUTPUT
+          Write-Host "version $code"
+
+      - name: Run tests
+        # NOTE: no release goes out on a red suite.
+        run: dotnet test QRPeek.sln -c Release
+
+      - name: Build
+        run: dotnet build src/QRPeek/QRPeek.csproj -c Release
+
+      - name: Package the ZIP
+        shell: pwsh
+        run: |
+          $out = "src/QRPeek/bin/Release/net48"
+          New-Item -ItemType Directory -Force -Path dist/QRPeek | Out-Null
+          Copy-Item "$out/QRPeek.exe", "$out/QRPeek.exe.config", "$out/*.dll", "$out/LICENSE.txt", "$out/THIRD-PARTY-NOTICES.txt" dist/QRPeek/
+          Compress-Archive -Path dist/QRPeek/* -DestinationPath dist/QRPeek-portable.zip -Force
+          Get-ChildItem dist/QRPeek | Format-Table Name, Length
+
+      - name: Compute SHA256
+        id: hash
+        shell: pwsh
+        run: |
+          $sha = (Get-FileHash dist/QRPeek-portable.zip -Algorithm SHA256).Hash.ToLower()
+          "sha=$sha" >> $env:GITHUB_OUTPUT
+          Write-Host "SHA256: $sha"
+
+      - name: Upload the ZIP as a workflow artifact
+        # NOTE: makes a manual build downloadable from the run page, so it can
+        # be tried by hand BEFORE a tag turns it into a public release.
+        uses: actions/upload-artifact@v7
+        with:
+          name: QRPeek-portable-${{ steps.version.outputs.version }}-${{ github.sha }}
+          path: dist/QRPeek-portable.zip
+          if-no-files-found: error
+
+      - name: Publish the release
+        # NOTE: only a version tag publishes. A manual run stops at the artifact above.
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v3
+        with:
+          files: dist/QRPeek-portable.zip
+          generate_release_notes: true
+          body: |
+            ## Windows: QRPeek-portable.zip
+
+            **TR:** Aşağıdaki **QRPeek-portable.zip**'i indirin, bir klasöre çıkarın ve `QRPeek.exe`'yi çalıştırın; kurulum gerekmez. Windows "Windows bilgisayarınızı korudu" derse **Ek bilgi → Yine de çalıştır**'a tıklayın (dosya henüz kod imzalı değil). Tek tıkla kurulum ve otomatik güncelleme isteyenler için Microsoft Store sürümü de var.
+
+            **EN:** Download **QRPeek-portable.zip** below, extract it to a folder and run `QRPeek.exe`; nothing to install. If Windows says "Windows protected your PC", click **More info → Run anyway** (the file isn't code-signed yet). A Microsoft Store version with one-click install and automatic updates is also available.
+
+            **SHA256**
+            ```
+            ${{ steps.hash.outputs.sha }}  QRPeek-portable.zip
+            ```
+            Verify in PowerShell: `Get-FileHash .\QRPeek-portable.zip`
+
+            See the [changelog](https://github.com/umitkrkmz/qrpeek/blob/master/CHANGELOG.md) for what changed.
