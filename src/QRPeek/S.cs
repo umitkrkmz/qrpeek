@@ -65,6 +65,12 @@ namespace QRPeek
         public static string Connected => T("Bağlandı", "Connected");
         public static string ConnectFailed => T("Bağlanılamadı. Ağ menzil dışında ya da şifre yanlış olabilir. Şifreyi kopyalayıp elle de bağlanabilirsiniz.",
                                                 "Couldn't connect. The network may be out of range or the password may be wrong. You can also copy the password and connect manually.");
+        public static string WifiLocationNote => T("“Bağlan”a bastığınızda Windows konum izni isteyebilir: Wi-Fi bilgileri konumu ortaya çıkarabildiği için Windows bunu her uygulamaya sorar. QRPeek konumunuzu kullanmaz; yalnızca doğru ağa bağlandığını doğrular.",
+                                                   "When you press “Connect”, Windows may ask for location access: Wi-Fi details can reveal where you are, so Windows asks every app. QRPeek doesn't use your location; it only checks that it joined the right network.");
+        public static string WifiUnverified => T("Bağlanma isteği gönderildi. Konum izni olmadığı için QRPeek bağlantıyı doğrulayamıyor; Wi-Fi simgesinden kontrol edebilirsiniz.",
+                                                 "The connect request was sent. Without location access QRPeek can't confirm the connection; check the Wi-Fi icon in the taskbar.");
+        public static string WifiLocationDenied => T("Windows bağlanmaya izin vermedi. Ayarlar → Gizlilik ve güvenlik → Konum bölümünden QRPeek'e izin verip tekrar deneyin ya da şifreyi kopyalayıp elle bağlanın.",
+                                                     "Windows didn't allow the connection. Allow QRPeek under Settings → Privacy & security → Location and try again, or copy the password and connect manually.");
         public static string NoWifiAdapter => T("Bu bilgisayarda kullanılabilir bir Wi-Fi bağdaştırıcısı bulunamadı.", "No usable Wi-Fi adapter was found on this PC.");
         public static string CopyPassword => T("Şifreyi kopyala", "Copy password");
         public static string SaveVcf => T("Kişiyi kaydet (.vcf)", "Save contact (.vcf)");

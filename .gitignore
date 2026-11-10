@@ -25,3 +25,6 @@ dist/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Working notes (plans, to-do lists) stay local
+packaging/msix/PLAN.md

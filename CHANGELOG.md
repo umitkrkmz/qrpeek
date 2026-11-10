@@ -45,7 +45,7 @@ This file lists notable changes to QRPeek, by release.
 - Türkçe ve İngilizce, Windows'un açık/koyu temasını izler; yaklaşık 1 MB, .NET Framework 4.8.
 
 **Bilinen kısıtlar**
-- Çoklu monitör ve farklı ölçekleme henüz test edilmedi.
+- Çoklu monitör, farklı ölçekleme ve ARM64 bilgisayarlar henüz test edilmedi.
 
 ---
 
@@ -85,4 +85,4 @@ This file lists notable changes to QRPeek, by release.
 - Turkish and English, follows the Windows light/dark theme; about 1 MB, .NET Framework 4.8.
 
 **Known limitations**
-- Multiple monitors and mixed scaling are untested.
+- Multiple monitors, mixed scaling and ARM64 PCs are untested.

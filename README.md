@@ -73,6 +73,7 @@ A small Windows tool that reads QR codes **on your screen**, with no camera or p
 ### Bilinen kısıtlar
 
 - Çoklu monitör ve monitörler arasında farklı ölçekleme (ör. %100 + %150) henüz test edilmedi. Uygulama monitör başına DPI uyumlu yazıldı; bu kurulumlarda bir sorun görürseniz lütfen [bildirin](https://github.com/umitkrkmz/qrpeek/issues/new/choose).
+- ARM64 işlemcili Windows 11 bilgisayarlarda (ör. Snapdragon X) henüz test edilmedi. Uygulama işlemciden bağımsız derlendiği için orada doğal olarak çalışması beklenir; sorun görürseniz lütfen bildirin.
 
 ### Kaynaktan derleme
 
@@ -112,6 +113,7 @@ dotnet test
 ### Known limitations
 
 - Multiple monitors and mixed scaling between monitors (e.g. 100% + 150%) have not been tested yet. The app is written to be per-monitor DPI aware; if you see a problem on such a setup, please [report it](https://github.com/umitkrkmz/qrpeek/issues/new/choose).
+- Not yet tested on ARM64 Windows 11 PCs (e.g. Snapdragon X). The app is built CPU-independent, so it's expected to run natively there; if you see a problem, please report it.
 
 ### Build from source
 

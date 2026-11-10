@@ -42,6 +42,10 @@ QRPeek kendi başına internete çıkmaz. Ağ yalnızca şu durumlarda kullanıl
 - **Telefona gönder** (yalnızca gönderme penceresi açıkken): dosyalar **yalnızca yerel ağınız üzerinden**, tahmin edilemeyen tek kullanımlık bir adresle paylaşılır. Bu adres en fazla 10 dakika geçerlidir ve internete açılmaz. Kısa metinler ve linkler ağ kullanılmadan doğrudan QR'a dönüştürülür.
 - **Wi-Fi'a bağlan** (siz bastığınızda): QR'daki ağın profili Windows'a eklenir ve Windows bu ağa bağlanır.
 
+### Konum izni (yalnızca Wi-Fi'a bağlanırken)
+
+QRPeek konumunuzu okumaz, saklamaz, göndermez. Ancak "Wi-Fi'a bağlan"a bastığınızda **Windows konum izni isteyebilir**. Windows 11 (24H2 ve sonrası), Wi-Fi ağ bilgilerini konum verisi sayar; çünkü ağ adları ve erişim noktası adresleri bir cihazın nerede olduğunu ortaya çıkarabilir. QRPeek bu bilgiye yalnızca QR'daki ağa gerçekten bağlanılıp bağlanılmadığını doğrulamak için bakar. İzni vermezseniz bağlanma isteği yine gönderilir, yalnızca QRPeek sonucu doğrulayamaz. İzni istediğiniz zaman Ayarlar → Gizlilik ve güvenlik → Konum bölümünden değiştirebilirsiniz.
+
 ### Paylaşım
 
 Geliştirici hiçbir veri toplamaz; dolayısıyla satmaz, kiralamaz veya üçüncü taraflarla paylaşmaz. Microsoft Store sürümünü satın aldığınızda ödeme ve lisans işlemlerini Microsoft yürütür; bu bilgiler Microsoft'un gizlilik bildirimine tabidir ve geliştiriciyle kişisel olarak paylaşılmaz.
@@ -91,6 +95,10 @@ QRPeek does not go online on its own. The network is used only in these cases:
 - **Version check** (GitHub version only, can be turned off in Settings): at most once a day, GitHub (`api.github.com`) is asked whether a newer version exists. The request carries no personal information. The Microsoft Store version doesn't do this; the Store delivers updates.
 - **Send to phone** (only while the send window is open): files are shared **over your local network only**, through an unguessable one-off address that is valid for at most 10 minutes and is not exposed to the internet. Short text and links are turned into a QR directly, with no network at all.
 - **Connect to Wi-Fi** (when you press it): the network profile from the QR is added to Windows and Windows connects to it.
+
+### Location permission (only when joining Wi-Fi)
+
+QRPeek never reads, stores or sends your location. However, when you press "Connect to Wi-Fi", **Windows may ask for location access**. Windows 11 (24H2 and later) treats Wi-Fi details as location data, because network names and access point addresses can reveal where a device is. QRPeek looks at this information only to confirm that it really joined the network from the QR code. If you don't allow it, the connect request is still sent; QRPeek just can't confirm the result. You can change this at any time under Settings → Privacy & security → Location.
 
 ### Sharing
 

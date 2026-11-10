@@ -18,6 +18,14 @@ namespace QRPeek.Core
         NoAdapter,
         /// <summary>Profile saved, but no connection within the timeout: out of range or wrong password.</summary>
         NotConnected,
+        /// <summary>
+        /// Connect was requested, but Windows won't tell us the current network
+        /// (location permission denied: Windows 11 24H2+ treats Wi-Fi details as
+        /// location data). The connection may well be up; we just can't confirm it.
+        /// </summary>
+        Unverified,
+        /// <summary>Windows refused the connect request itself (location permission denied).</summary>
+        LocationDenied,
     }
 
     /// <summary>
@@ -74,13 +82,17 @@ namespace QRPeek.Core
                     strProfile = wifi.Ssid,
                     dot11BssType = 1,       // infrastructure
                 };
-                if (WlanConnect(handle, ref iface, ref p, IntPtr.Zero) != 0) return WifiResult.NotConnected;
+                uint rc = WlanConnect(handle, ref iface, ref p, IntPtr.Zero);
+                if (rc == ERROR_ACCESS_DENIED) return WifiResult.LocationDenied;
+                if (rc != 0) return WifiResult.NotConnected;
 
                 DateTime until = DateTime.UtcNow + Timeout;
                 while (DateTime.UtcNow < until)
                 {
                     Thread.Sleep(500);
-                    if (IsConnectedTo(handle, iface, wifi.Ssid)) return WifiResult.Connected;
+                    bool? connected = IsConnectedTo(handle, iface, wifi.Ssid);
+                    if (connected == null) return WifiResult.Unverified;
+                    if (connected == true) return WifiResult.Connected;
                 }
                 return WifiResult.NotConnected;
             }
@@ -112,13 +124,13 @@ namespace QRPeek.Core
             return list;
         }
 
-        private static bool IsConnectedTo(IntPtr handle, Guid iface, string profile)
+        /// <summary>True/false, or null when Windows won't say (location permission denied).</summary>
+        private static bool? IsConnectedTo(IntPtr handle, Guid iface, string profile)
         {
-            if (WlanQueryInterface(handle, ref iface, wlan_intf_opcode_current_connection, IntPtr.Zero,
-                    out _, out IntPtr data, IntPtr.Zero) != 0)
-            {
-                return false; // not connected yet (ERROR_INVALID_STATE)
-            }
+            uint rc = WlanQueryInterface(handle, ref iface, wlan_intf_opcode_current_connection, IntPtr.Zero,
+                out _, out IntPtr data, IntPtr.Zero);
+            if (rc == ERROR_ACCESS_DENIED) return null;
+            if (rc != 0) return false; // not connected yet (ERROR_INVALID_STATE)
             try
             {
                 // WLAN_CONNECTION_ATTRIBUTES: isState (DWORD), wlanConnectionMode (DWORD), WCHAR strProfileName[256]
@@ -176,6 +188,7 @@ namespace QRPeek.Core
         // ------------------------------------------------------------ wlanapi.dll
 
         private const uint WLAN_PROFILE_USER = 0x00000002;
+        private const uint ERROR_ACCESS_DENIED = 5;
         private const int wlan_intf_opcode_current_connection = 7;
         private const int wlan_interface_state_connected = 1;
 

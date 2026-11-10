@@ -160,21 +160,43 @@ namespace QRPeek.UI
             WifiInfo w = c.Wifi;
             var grid = Grid2();
             AddRow(grid, S.WifiNetwork, w.Ssid);
+            TextBox password = null;
+            string masked = new string('•', Math.Max(8, Math.Min(w.Password.Length, 16)));
             if (w.IsOpen) AddRow(grid, S.WifiPassword, S.SecNone);
             else if (w.PasswordMissing) AddRow(grid, S.WifiPassword, S.PasswordNotStored, muted: true);
-            else AddRow(grid, S.WifiPassword, w.Password, mono: true);
+            else password = AddRow(grid, S.WifiPassword, masked, mono: true); // hidden by default: someone may be looking
             string sec = w.IsOpen ? S.SecNone : (w.Security.ToUpperInvariant() == "SAE" ? "WPA3" : w.Security.ToUpperInvariant() == "WPA" ? "WPA/WPA2" : w.Security);
             AddRow(grid, S.WifiSecurity, sec);
             stack.Children.Add(grid);
 
             if (w.PasswordMissing) return; // from history: nothing to connect with
             actions.Children.Add(WifiConnectButton(w));
-            if (!w.IsOpen)
+            if (password != null)
             {
+                bool shown = false;
+                Button toggle = ActionButton("", S.Show, false);
+                toggle.Click += (s, e) =>
+                {
+                    shown = !shown;
+                    password.Text = shown ? w.Password : masked;
+                    SetButtonText(toggle, shown ? S.Hide : S.Show);
+                };
+                actions.Children.Add(toggle);
+
                 Button pw = ActionButton("", S.CopyPassword, false);
                 pw.Click += (s, e) => CopyWithFeedback(pw, w.Password, sensitive: true);
                 actions.Children.Add(pw);
             }
+
+            // Windows 11 24H2+ asks for location when an app reads Wi-Fi details;
+            // say so before the user presses Connect, so the prompt isn't a surprise.
+            stack.Children.Add(new TextBlock
+            {
+                Text = S.WifiLocationNote,
+                Style = (Style)FindResource("Muted"),
+                FontSize = 12,
+                Margin = new Thickness(0, 6, 0, 0),
+            });
         }
 
         private void OtpCard(QrContent c, StackPanel stack, WrapPanel actions)
@@ -330,7 +352,11 @@ namespace QRPeek.UI
                 b.IsEnabled = !ok;
                 if (!ok)
                 {
-                    string msg = result == WifiResult.NoAdapter ? S.NoWifiAdapter : S.ConnectFailed;
+                    string msg =
+                        result == WifiResult.NoAdapter ? S.NoWifiAdapter :
+                        result == WifiResult.Unverified ? S.WifiUnverified :
+                        result == WifiResult.LocationDenied ? S.WifiLocationDenied :
+                        S.ConnectFailed;
                     MessageBox.Show(this, msg, S.AppName, MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             };

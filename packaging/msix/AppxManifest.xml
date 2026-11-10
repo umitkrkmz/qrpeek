@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The Microsoft Store package of QRPeek, packed by build_msix.ps1.
+
+  Identity Name/Publisher and PublisherDisplayName are the Store's own values
+  from Partner Center (QRPeek -> Product identity); a package with any other
+  identity is rejected at upload. The Store signs the package with that
+  Publisher.
+
+  Version: build_msix.ps1 writes <Version> from QRPeek.csproj plus ".0"
+  (0.1.0 -> 0.1.0.0). The 4th part must stay 0: the Store reserves it.
+
+  ProcessorArchitecture="x64": the Windows App Certification Kit can't analyse
+  a "neutral" desktop (full trust) package - almost every test crashed with
+  "manifest not found". x64 packages are still offered to ARM64 Windows 11 PCs,
+  and QRPeek.exe itself is AnyCPU (.NET Framework 4.8), so it runs natively
+  there anyway; the package architecture only decides where it installs.
+
+  StartupTask: TaskId must match Autostart.StartupTaskId in the code. It ships
+  disabled; the user turns it on in QRPeek's settings and Windows asks once.
+  The Run key used by the GitHub build doesn't apply to packaged apps.
+
+  Local try (Developer Mode on): Add-AppxPackage -Register
+  build\msix\layout\AppxManifest.xml. An unsigned .msix can't be installed
+  directly (0x80073D2B), so local tries register the layout folder instead.
+-->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap uap5 rescap">
+  <Identity
+    Name="umitkrkmz.QRPeek"
+    Publisher="CN=299D0427-0828-45F7-8D31-BE979548312D"
+    Version="0.0.0.0"
+    ProcessorArchitecture="x64" />
+  <Properties>
+    <DisplayName>QRPeek</DisplayName>
+    <PublisherDisplayName>umitkrkmz</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+  <Resources>
+    <Resource Language="tr-tr" />
+    <Resource Language="en-us" />
+  </Resources>
+  <Applications>
+    <Application
+      Id="QRPeek"
+      Executable="QRPeek.exe"
+      EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="QRPeek"
+        Description="Read QR codes on your screen without a camera, and create them"
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+      </uap:VisualElements>
+      <Extensions>
+        <uap5:Extension
+          Category="windows.startupTask"
+          Executable="QRPeek.exe"
+          EntryPoint="Windows.FullTrustApplication">
+          <uap5:StartupTask TaskId="QRPeekStartup" Enabled="false" DisplayName="QRPeek" />
+        </uap5:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>
