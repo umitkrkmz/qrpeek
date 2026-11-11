@@ -15,11 +15,16 @@ namespace QRPeek.Core
     {
         public const char ScanKey = 'Q';
         public const char SendKey = 'W';
+        public const char ReceiveKey = 'R';
 
         /// <summary>Scan screen shortcut (letter <see cref="ScanKey"/>).</summary>
         [DataMember] public string Hotkey { get; set; }
         /// <summary>"Send clipboard to phone" shortcut (letter <see cref="SendKey"/>).</summary>
         [DataMember] public string SendHotkey { get; set; }
+        /// <summary>"Receive from phone" shortcut (letter <see cref="ReceiveKey"/>); off by default.</summary>
+        [DataMember] public string ReceiveHotkey { get; set; }
+        /// <summary>Where files from the phone are saved; empty = Downloads\QRPeek.</summary>
+        [DataMember] public string ReceiveFolder { get; set; }
         [DataMember] public bool CopyAutomatically { get; set; }
         [DataMember] public bool KeepHistory { get; set; }
         [DataMember] public bool WatchScreen { get; set; }
@@ -43,6 +48,8 @@ namespace QRPeek.Core
         {
             Hotkey = HotkeyPreset.For(ScanKey)[0].Id;
             SendHotkey = HotkeyPreset.For(SendKey)[0].Id;
+            ReceiveHotkey = "none";
+            ReceiveFolder = "";
             CopyAutomatically = true;
             KeepHistory = true;
             WatchScreen = false;

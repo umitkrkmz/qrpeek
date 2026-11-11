@@ -25,7 +25,12 @@
             </Grid>
         </Border>
 
-        <TextBlock x:Name="WhatText" FontSize="13.5" Margin="0,12,0,0" TextTrimming="CharacterEllipsis" MaxHeight="60" />
+        <!-- Where the content came from: the window picks up the clipboard by itself, so say so. -->
+        <DockPanel x:Name="SourceRow" Margin="0,12,0,0" Visibility="Collapsed">
+            <TextBlock Text="&#xE77F;" Style="{StaticResource Icon}" FontSize="12" Foreground="{DynamicResource FgMuted}" Margin="0,1,6,0" VerticalAlignment="Center" />
+            <TextBlock Text="{x:Static local:S.FromClipboard}" Style="{StaticResource Muted}" VerticalAlignment="Center" />
+        </DockPanel>
+        <TextBlock x:Name="WhatText" FontSize="13.5" Margin="0,6,0,0" TextTrimming="CharacterEllipsis" MaxHeight="60" />
         <TextBlock x:Name="NoteText" Style="{StaticResource Muted}" Margin="0,6,0,0" />
 
         <DockPanel x:Name="StatusRow" Margin="0,10,0,0" Visibility="Collapsed">
@@ -41,6 +46,12 @@
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="&#xE8E5;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
                     <TextBlock Text="{x:Static local:S.PickFiles}" />
+                </StackPanel>
+            </Button>
+            <Button DockPanel.Dock="Left" Click="OnReceive" Margin="8,0,0,0" ToolTip="{x:Static local:S.RecvHint}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE896;" Style="{StaticResource Icon}" FontSize="14" Margin="0,0,8,0" />
+                    <TextBlock Text="{x:Static local:S.ReceiveButton}" />
                 </StackPanel>
             </Button>
             <Button DockPanel.Dock="Right" Style="{StaticResource Primary}" Content="{x:Static local:S.Close}" Click="OnClose" IsCancel="True" />

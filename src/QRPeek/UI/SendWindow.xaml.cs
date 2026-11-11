@@ -65,6 +65,7 @@ namespace QRPeek.UI
                 if (Clipboard.ContainsFileDropList())
                 {
                     LoadFiles(Clipboard.GetFileDropList().Cast<string>().ToList());
+                    ShowFromClipboard();
                     return;
                 }
                 if (Clipboard.ContainsText())
@@ -73,6 +74,7 @@ namespace QRPeek.UI
                     if (!string.IsNullOrWhiteSpace(text))
                     {
                         LoadText(text);
+                        ShowFromClipboard();
                         return;
                     }
                 }
@@ -85,6 +87,7 @@ namespace QRPeek.UI
                             string path = TempPath(S.ClipboardFileName + "-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".png");
                             bmp.Save(path, System.Drawing.Imaging.ImageFormat.Png);
                             LoadFiles(new[] { path }, temp: true);
+                            ShowFromClipboard();
                             return;
                         }
                     }
@@ -97,9 +100,16 @@ namespace QRPeek.UI
             ShowEmpty();
         }
 
+        /// <summary>After a load from the clipboard succeeded (not when it ended in an error or empty state).</summary>
+        private void ShowFromClipboard()
+        {
+            if (QrCard.Visibility == Visibility.Visible) SourceRow.Visibility = Visibility.Visible;
+        }
+
         internal void LoadText(string text)
         {
             StopShare();
+            SourceRow.Visibility = Visibility.Collapsed;
             if (Encoding.UTF8.GetByteCount(text) > MaxQrTextBytes)
             {
                 string path = TempPath(S.ClipboardFileName + "-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".txt");
@@ -120,6 +130,7 @@ namespace QRPeek.UI
         internal void LoadFiles(IEnumerable<string> paths, bool temp = false, string note = null)
         {
             StopShare(keepTemp: temp);
+            SourceRow.Visibility = Visibility.Collapsed;
             List<SharedFile> files = paths.Where(File.Exists).Select(p => new SharedFile(p, deleteAfter: temp)).ToList();
             if (files.Count == 0)
             {
@@ -127,7 +138,7 @@ namespace QRPeek.UI
                 return;
             }
 
-            IPAddress ip = LanShare.FindLanAddress();
+            IPAddress ip = LanHttp.FindLanAddress();
             if (ip == null)
             {
                 ShowError(S.LanOffline);
@@ -164,7 +175,7 @@ namespace QRPeek.UI
 
             ShowQr(_share.Url);
             long total = files.Sum(f => f.Length);
-            WhatText.Text = files.Count == 1 ? files[0].Name + "  ·  " + LanShare.FormatSize(total) : S.LanFiles(files.Count, LanShare.FormatSize(total));
+            WhatText.Text = files.Count == 1 ? files[0].Name + "  ·  " + LanHttp.FormatSize(total) : S.LanFiles(files.Count, LanHttp.FormatSize(total));
             NoteText.Text = (note != null ? note + " " : "") + S.LanHint;
             NoteText.Visibility = Visibility.Visible;
             StatusRow.Visibility = Visibility.Visible;
@@ -248,6 +259,12 @@ namespace QRPeek.UI
         {
             var dlg = new OpenFileDialog { Multiselect = true };
             if (dlg.ShowDialog(this) == true) LoadFiles(dlg.FileNames);
+        }
+
+        private void OnReceive(object sender, RoutedEventArgs e)
+        {
+            Close(); // one QR on screen at a time
+            App.Instance.ShowReceive();
         }
 
         private void OnClose(object sender, RoutedEventArgs e) => Close();

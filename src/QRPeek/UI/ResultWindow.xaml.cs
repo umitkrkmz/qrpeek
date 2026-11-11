@@ -26,7 +26,8 @@ namespace QRPeek.UI
             WindowTheme.Attach(this);
         }
 
-        internal void ShowItems(List<string> texts, bool autoCopied)
+        /// <param name="places">Which screen each code was on; null when there's only one screen or it wasn't a screen scan.</param>
+        internal void ShowItems(List<string> texts, bool autoCopied, IReadOnlyDictionary<string, ScreenPlace> places = null)
         {
             Items.Children.Clear();
             CopiedBadge.Visibility = autoCopied ? Visibility.Visible : Visibility.Collapsed;
@@ -39,7 +40,11 @@ namespace QRPeek.UI
             else
             {
                 Heading.Text = S.FoundCount(texts.Count);
-                foreach (string t in texts) Items.Children.Add(BuildCard(QrContent.Parse(t)));
+                foreach (string t in texts)
+                {
+                    ScreenPlace? where = places != null && places.TryGetValue(t, out ScreenPlace p) ? p : (ScreenPlace?)null;
+                    Items.Children.Add(BuildCard(QrContent.Parse(t), where));
+                }
             }
 
             bool place = !IsVisible;
@@ -53,10 +58,10 @@ namespace QRPeek.UI
 
         // ------------------------------------------------------------ cards
 
-        private UIElement BuildCard(QrContent c)
+        private UIElement BuildCard(QrContent c, ScreenPlace? where = null)
         {
             var stack = new StackPanel();
-            stack.Children.Add(KindLine(c.Kind));
+            stack.Children.Add(KindLine(c.Kind, where));
             var actions = new WrapPanel { Margin = new Thickness(0, 10, 0, 0) };
 
             switch (c.Kind)
@@ -284,12 +289,23 @@ namespace QRPeek.UI
 
         // ------------------------------------------------------------ building blocks
 
-        private UIElement KindLine(ContentKind k)
+        private UIElement KindLine(ContentKind k, ScreenPlace? where = null)
         {
-            var kind = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 8) };
+            var line = new DockPanel { Margin = new Thickness(0, 0, 0, 8) };
+            if (where.HasValue)
+            {
+                // "On the left screen": only with more than one monitor.
+                var place = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0) };
+                place.Children.Add(new TextBlock { Text = "", Style = (Style)FindResource("Icon"), FontSize = 12, Foreground = (Brush)FindResource("FgMuted"), Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center });
+                place.Children.Add(new TextBlock { Text = S.OnScreen(where.Value), Style = (Style)FindResource("Muted"), VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.NoWrap });
+                DockPanel.SetDock(place, Dock.Right);
+                line.Children.Add(place);
+            }
+            var kind = new StackPanel { Orientation = Orientation.Horizontal };
             kind.Children.Add(new TextBlock { Text = KindIcon(k), Style = (Style)FindResource("Icon"), FontSize = 14, Foreground = (Brush)FindResource("Accent"), Margin = new Thickness(0, 0, 8, 0) });
             kind.Children.Add(new TextBlock { Text = KindLabel(k), FontWeight = FontWeights.SemiBold, FontSize = 13 });
-            return kind;
+            line.Children.Add(kind);
+            return line;
         }
 
         private TextBlock HostLine(string label, string host)

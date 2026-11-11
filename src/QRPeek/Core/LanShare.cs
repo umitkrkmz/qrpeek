@@ -7,9 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,17 +32,18 @@ namespace QRPeek.Core
     }
 
     /// <summary>
-    /// A tiny one-off web server on the local network: the phone scans the QR,
-    /// opens http://PC-IP:port/secret/ and downloads. No cloud, no account.
+    /// PC → phone. A tiny one-off web server on the local network: the phone
+    /// scans the QR, opens http://PC-IP:port/secret/ and downloads. No cloud,
+    /// no account.
     ///
     /// Safety: the URL holds a 128-bit random secret (anything else gets 404),
-    /// only the listed files are served, read-only, and it stops by itself
-    /// after <see cref="Lifetime"/> or when the window closes.
+    /// only the listed files are served, read-only (GET/HEAD only), and it
+    /// stops by itself after <see cref="Lifetime"/> or when the window closes.
+    /// Receiving files is a separate server with its own rules: <see cref="LanReceive"/>.
     /// </summary>
     internal sealed class LanShare : IDisposable
     {
         public static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(10);
-        private const int MaxHeaderBytes = 8192;
 
         private readonly IReadOnlyList<SharedFile> _files;
         private readonly string _token;
@@ -61,7 +60,7 @@ namespace QRPeek.Core
         public LanShare(IReadOnlyList<SharedFile> files, IPAddress address)
         {
             _files = files;
-            _token = NewToken();
+            _token = LanHttp.NewToken();
             _listener = new TcpListener(IPAddress.Any, 0);
             _listener.Start();
             int port = ((IPEndPoint)_listener.LocalEndpoint).Port;
@@ -75,50 +74,6 @@ namespace QRPeek.Core
         public DateTime Expires { get; }
 
         public IReadOnlyList<SharedFile> Files => _files;
-
-        /// <summary>
-        /// The IPv4 address a phone on the same Wi-Fi can reach: an active
-        /// adapter with a default gateway, preferring real Wi-Fi/Ethernet over
-        /// virtual ones (Hyper-V, WSL, VMware, VPN). Null when offline.
-        /// </summary>
-        public static IPAddress FindLanAddress()
-        {
-            IPAddress best = null;
-            int bestScore = int.MinValue;
-            foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
-            {
-                if (ni.OperationalStatus != OperationalStatus.Up) continue;
-                if (ni.NetworkInterfaceType == NetworkInterfaceType.Loopback || ni.NetworkInterfaceType == NetworkInterfaceType.Tunnel) continue;
-
-                IPInterfaceProperties props = ni.GetIPProperties();
-                UnicastIPAddressInformation v4 = props.UnicastAddresses.FirstOrDefault(a =>
-                    a.Address.AddressFamily == AddressFamily.InterNetwork
-                    && !IPAddress.IsLoopback(a.Address)
-                    && !a.Address.ToString().StartsWith("169.254."));
-                if (v4 == null) continue;
-
-                int score = 0;
-                if (props.GatewayAddresses.Any(g => g.Address.AddressFamily == AddressFamily.InterNetwork && !g.Address.Equals(IPAddress.Any))) score += 4;
-                if (ni.NetworkInterfaceType == NetworkInterfaceType.Wireless80211) score += 2;
-                if (ni.NetworkInterfaceType == NetworkInterfaceType.Ethernet) score += 1;
-                string id = (ni.Name + " " + ni.Description).ToLowerInvariant();
-                if (new[] { "virtual", "vethernet", "hyper-v", "vmware", "virtualbox", "wsl", "docker", "vpn", "tap-", "wireguard", "tailscale", "zerotier" }.Any(id.Contains)) score -= 6;
-
-                if (score > bestScore)
-                {
-                    bestScore = score;
-                    best = v4.Address;
-                }
-            }
-            return best;
-        }
-
-        private static string NewToken()
-        {
-            var bytes = new byte[16];
-            using (var rng = RandomNumberGenerator.Create()) rng.GetBytes(bytes);
-            return Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
-        }
 
         private async Task AcceptLoop()
         {
@@ -146,7 +101,7 @@ namespace QRPeek.Core
                     client.ReceiveTimeout = 15000;
                     client.SendTimeout = 30000;
                     NetworkStream stream = client.GetStream();
-                    string request = ReadHeaders(stream);
+                    string request = LanHttp.ReadHeaders(stream);
                     if (request == null) return;
 
                     string[] first = request.Split(new[] { "\r\n" }, StringSplitOptions.None)[0].Split(' ');
@@ -156,14 +111,14 @@ namespace QRPeek.Core
                     bool head = method == "HEAD";
                     if (method != "GET" && !head)
                     {
-                        Send(stream, 405, "text/plain", Encoding.ASCII.GetBytes("Method not allowed"), head);
+                        LanHttp.Send(stream, 405, "text/plain", Encoding.ASCII.GetBytes("Method not allowed"), head);
                         return;
                     }
 
                     string prefix = "/" + _token;
                     if (path == prefix || path == prefix + "/")
                     {
-                        Send(stream, 200, "text/html; charset=utf-8", Encoding.UTF8.GetBytes(LandingPage()), head);
+                        LanHttp.Send(stream, 200, "text/html; charset=utf-8", Encoding.UTF8.GetBytes(LandingPage()), head);
                         return;
                     }
                     if (path.StartsWith(prefix + "/") && int.TryParse(path.Substring(prefix.Length + 1), out int index)
@@ -172,45 +127,12 @@ namespace QRPeek.Core
                         SendFile(stream, _files[index], head);
                         return;
                     }
-                    Send(stream, 404, "text/plain", Encoding.ASCII.GetBytes("Not found"), head);
+                    LanHttp.Send(stream, 404, "text/plain", Encoding.ASCII.GetBytes("Not found"), head);
                 }
                 catch (IOException) { }
                 catch (SocketException) { }
                 catch (ObjectDisposedException) { }
             }
-        }
-
-        private static string ReadHeaders(NetworkStream stream)
-        {
-            var buf = new List<byte>(1024);
-            var one = new byte[1];
-            while (buf.Count < MaxHeaderBytes)
-            {
-                int n = stream.Read(one, 0, 1);
-                if (n <= 0) return null;
-                buf.Add(one[0]);
-                int c = buf.Count;
-                if (c >= 4 && buf[c - 4] == '\r' && buf[c - 3] == '\n' && buf[c - 2] == '\r' && buf[c - 1] == '\n')
-                {
-                    return Encoding.ASCII.GetString(buf.ToArray());
-                }
-            }
-            return null;
-        }
-
-        private static void Send(Stream s, int code, string type, byte[] body, bool head)
-        {
-            string status = code == 200 ? "OK" : code == 404 ? "Not Found" : code == 405 ? "Method Not Allowed" : "Error";
-            string headers = "HTTP/1.1 " + code + " " + status + "\r\n"
-                             + "Content-Type: " + type + "\r\n"
-                             + "Content-Length: " + body.Length + "\r\n"
-                             + "Cache-Control: no-store\r\n"
-                             + "X-Content-Type-Options: nosniff\r\n"
-                             + "Referrer-Policy: no-referrer\r\n"
-                             + "Connection: close\r\n\r\n";
-            byte[] h = Encoding.ASCII.GetBytes(headers);
-            s.Write(h, 0, h.Length);
-            if (!head) s.Write(body, 0, body.Length);
         }
 
         private void SendFile(Stream s, SharedFile f, bool head)
@@ -252,7 +174,7 @@ namespace QRPeek.Core
                 SharedFile f = _files[i];
                 rows.Append("<a class=\"f\" href=\"").Append(i).Append("\" download=\"").Append(Esc(f.Name)).Append("\">")
                     .Append("<span class=\"n\">").Append(Esc(f.Name)).Append("</span>")
-                    .Append("<span class=\"s\">").Append(Esc(FormatSize(f.Length))).Append("</span>")
+                    .Append("<span class=\"s\">").Append(Esc(LanHttp.FormatSize(f.Length))).Append("</span>")
                     .Append("<span class=\"b\">").Append(Esc(S.LanDownload)).Append("</span></a>");
             }
             return "<!doctype html><html lang=\"" + (S.IsTurkish ? "tr" : "en") + "\"><head><meta charset=\"utf-8\">"
@@ -265,15 +187,6 @@ namespace QRPeek.Core
                    + ".n{flex:1 1 100%;font-weight:600;word-break:break-all}.s{flex:1;opacity:.65;font-size:14px}"
                    + ".b{background:#2563eb;color:#fff;border-radius:8px;padding:8px 16px;font-weight:600;font-size:15px}"
                    + "</style></head><body><main><h1>QRPeek</h1><p>" + Esc(S.LanPageHint) + "</p>" + rows + "</main></body></html>";
-        }
-
-        public static string FormatSize(long bytes)
-        {
-            System.Globalization.CultureInfo ci = S.IsTurkish ? new System.Globalization.CultureInfo("tr-TR") : System.Globalization.CultureInfo.InvariantCulture;
-            if (bytes < 1024) return bytes + " B";
-            if (bytes < 1024 * 1024) return (bytes / 1024.0).ToString("0.#", ci) + " KB";
-            if (bytes < 1024L * 1024 * 1024) return (bytes / 1048576.0).ToString("0.#", ci) + " MB";
-            return (bytes / 1073741824.0).ToString("0.##", ci) + " GB";
         }
 
         private static string MimeType(string name)

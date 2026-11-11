@@ -28,6 +28,7 @@ namespace QRPeek
         private const string ShowEventName = @"Local\QRPeek.Show";
         private const int ScanHotkeyId = 1;
         private const int SendHotkeyId = 2;
+        private const int ReceiveHotkeyId = 3;
 
         private Mutex _instanceMutex;
         private EventWaitHandle _showEvent;
@@ -40,6 +41,7 @@ namespace QRPeek
         private GeneratorWindow _generator;
         private SettingsWindow _settings;
         private SendWindow _send;
+        private ReceiveWindow _receive;
         private volatile bool _busy;
         private volatile bool _showingOwnQr;
         private bool _restoreMainAfterScan;
@@ -61,6 +63,13 @@ namespace QRPeek
         internal bool HotkeyActive { get; private set; }
 
         internal bool SendHotkeyActive { get; private set; }
+
+        internal HotkeyPreset ReceiveHotkey => HotkeyPreset.Find(Settings.ReceiveHotkey, AppSettings.ReceiveKey);
+
+        internal bool ReceiveHotkeyActive { get; private set; }
+
+        /// <summary>Where "Receive from phone" saves files.</summary>
+        internal string ReceiveFolder => string.IsNullOrWhiteSpace(Settings.ReceiveFolder) ? ReceivedFiles.DefaultFolder() : Settings.ReceiveFolder;
 
         /// <summary>GitHub build: a newer release found by the update check, else null.</summary>
         internal UpdateInfo AvailableUpdate { get; private set; }
@@ -98,6 +107,7 @@ namespace QRPeek
             {
                 if (id == ScanHotkeyId) ScanScreen(fromWindow: false);
                 else if (id == SendHotkeyId) ShowSend();
+                else if (id == ReceiveHotkeyId) ShowReceive();
             };
 
             CreateTray();
@@ -109,7 +119,8 @@ namespace QRPeek
             // --tray: GitHub build started by the Run key. Store build: started by its StartupTask.
             bool startHidden = e.Args.Any(a => a.Equals("--tray", StringComparison.OrdinalIgnoreCase)) || Autostart.LaunchedAtStartup();
             if (!startHidden) ShowMain();
-            if ((!HotkeyActive && !Hotkey.IsNone) || (!SendHotkeyActive && !SendHotkey.IsNone)) Notify(S.HotkeyTaken);
+            if ((!HotkeyActive && !Hotkey.IsNone) || (!SendHotkeyActive && !SendHotkey.IsNone)
+                || (!ReceiveHotkeyActive && !ReceiveHotkey.IsNone)) Notify(S.HotkeyTaken);
         }
 
         protected override void OnExit(ExitEventArgs e)
@@ -146,11 +157,14 @@ namespace QRPeek
 
                 shots = ScreenCapture.CaptureAll();
                 List<MonitorShot> captured = shots;
-                List<string> texts = await Task.Run(() => captured.SelectMany(s => QrScanner.Decode(s.Image)).Distinct().ToList());
+                List<IReadOnlyList<string>> perShot = await Task.Run(() =>
+                    captured.Select(s => (IReadOnlyList<string>)QrScanner.Decode(s.Image)).ToList());
+                List<string> texts = perShot.SelectMany(t => t).Distinct().ToList();
 
                 if (texts.Count > 0)
                 {
-                    ShowResults(texts);
+                    // With more than one screen, say where each code was ("on the left screen").
+                    ShowResults(texts, places: captured.Count > 1 ? ScreenCapture.PlacesOf(captured, perShot) : null);
                 }
                 else
                 {
@@ -240,7 +254,7 @@ namespace QRPeek
             }
         }
 
-        internal void ShowResults(List<string> texts, bool fromHistory = false)
+        internal void ShowResults(List<string> texts, bool fromHistory = false, IReadOnlyDictionary<string, ScreenPlace> places = null)
         {
             bool autoCopied = false;
             // Secrets (2FA keys, Wi-Fi passwords) are never copied on their own:
@@ -252,7 +266,7 @@ namespace QRPeek
 
             RestoreMain();
             if (_results == null || !_results.IsLoaded) _results = new ResultWindow();
-            _results.ShowItems(texts, autoCopied);
+            _results.ShowItems(texts, autoCopied, places);
 
             _watcher?.MarkSeen(texts);
             if (!fromHistory) AddHistory(texts);
@@ -375,6 +389,17 @@ namespace QRPeek
             if (files != null) _send.LoadFiles(files);
             else _send.LoadClipboard();
             BringToFront(_send);
+        }
+
+        /// <summary>Opens "Receive from phone": a new QR and session each time the window opens.</summary>
+        internal void ShowReceive()
+        {
+            if (_receive == null || !_receive.IsLoaded)
+            {
+                _receive = new ReceiveWindow();
+                TrackOwnQr(_receive);
+            }
+            BringToFront(_receive);
         }
 
         internal void ShowSettings()
@@ -504,11 +529,12 @@ namespace QRPeek
 
         // ---------------------------------------------------------------- settings
 
-        /// <summary>Registers both shortcuts. Check HotkeyActive / SendHotkeyActive for the outcome.</summary>
+        /// <summary>Registers the shortcuts. Check HotkeyActive / SendHotkeyActive / ReceiveHotkeyActive for the outcome.</summary>
         internal void ApplyHotkeys()
         {
             HotkeyActive = _hotkeys.Register(ScanHotkeyId, Hotkey) && !Hotkey.IsNone;
             SendHotkeyActive = _hotkeys.Register(SendHotkeyId, SendHotkey) && !SendHotkey.IsNone;
+            ReceiveHotkeyActive = _hotkeys.Register(ReceiveHotkeyId, ReceiveHotkey) && !ReceiveHotkey.IsNone;
             UpdateTrayMenu();
             HotkeysChanged?.Invoke();
         }
@@ -573,6 +599,9 @@ namespace QRPeek
             var send = new Forms.ToolStripMenuItem(S.SendToPhone, null, (s, e) => ShowSend());
             if (SendHotkeyActive) send.ShortcutKeyDisplayString = SendHotkey.Display.Replace(" ", "");
             menu.Items.Add(send);
+            var receive = new Forms.ToolStripMenuItem(S.ReceiveFromPhone, null, (s, e) => ShowReceive());
+            if (ReceiveHotkeyActive) receive.ShortcutKeyDisplayString = ReceiveHotkey.Display.Replace(" ", "");
+            menu.Items.Add(receive);
             menu.Items.Add(S.CreateQr, null, (s, e) => ShowGenerator());
             menu.Items.Add(new Forms.ToolStripSeparator());
             menu.Items.Add(S.TrayOpen, null, (s, e) => ShowMain());

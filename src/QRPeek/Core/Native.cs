@@ -44,6 +44,39 @@ namespace QRPeek.Core
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
         private static extern int GetCurrentPackageFullName(ref int packageFullNameLength, StringBuilder packageFullName);
 
+        public const uint GENERIC_READ = 0x80000000;
+        public const uint GENERIC_WRITE = 0x40000000;
+        public const uint CREATE_ALWAYS = 2;
+        public const uint OPEN_EXISTING = 3;
+
+        /// <summary>
+        /// Used for NTFS alternate data streams ("file:Zone.Identifier"), which
+        /// .NET Framework's FileStream refuses to open by path.
+        /// </summary>
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern Microsoft.Win32.SafeHandles.SafeFileHandle CreateFile(string name, uint access, uint share, IntPtr security,
+            uint creation, uint flags, IntPtr template);
+
+        private static readonly Guid FOLDERID_Downloads = new Guid("374DE290-123F-4565-9164-39C4925E467B");
+
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+        private static extern int SHGetKnownFolderPath([MarshalAs(UnmanagedType.LPStruct)] Guid id, uint flags, IntPtr token, out IntPtr path);
+
+        /// <summary>The user's Downloads folder (wherever they moved it), or %USERPROFILE%\Downloads.</summary>
+        public static string DownloadsFolder()
+        {
+            try
+            {
+                if (SHGetKnownFolderPath(FOLDERID_Downloads, 0, IntPtr.Zero, out IntPtr p) == 0)
+                {
+                    try { return Marshal.PtrToStringUni(p); }
+                    finally { Marshal.FreeCoTaskMem(p); }
+                }
+            }
+            catch (EntryPointNotFoundException) { }
+            return System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+        }
+
         /// <summary>
         /// True when running as the MSIX (Microsoft Store) package. Some things
         /// differ there: autostart is a manifest StartupTask instead of the Run key.
