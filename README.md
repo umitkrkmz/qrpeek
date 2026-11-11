@@ -24,7 +24,10 @@ A small Windows tool that reads QR codes **on your screen**, with no camera or p
   </tr>
   <tr>
     <td><img src="docs/images/send-tr.png" alt="Telefona gönder" width="300"></td>
-    <td><img src="docs/images/generator-tr.png" alt="QR oluşturucu" width="300"></td>
+    <td><img src="docs/images/receive-tr.png" alt="Telefondan al: bilgisayarda onay" width="300"></td>
+  </tr>
+  <tr>
+    <td colspan="2"><img src="docs/images/generator-tr.png" alt="QR oluşturucu" width="610"></td>
   </tr>
 </table>
 
@@ -38,7 +41,10 @@ A small Windows tool that reads QR codes **on your screen**, with no camera or p
   </tr>
   <tr>
     <td><img src="docs/images/send-en.png" alt="Send to phone" width="300"></td>
-    <td><img src="docs/images/generator-en.png" alt="QR generator" width="300"></td>
+    <td><img src="docs/images/receive-en.png" alt="Receive from phone: approval on the PC" width="300"></td>
+  </tr>
+  <tr>
+    <td colspan="2"><img src="docs/images/generator-en.png" alt="QR generator" width="610"></td>
   </tr>
 </table>
 
@@ -73,7 +79,6 @@ A small Windows tool that reads QR codes **on your screen**, with no camera or p
 
 ### Bilinen kısıtlar
 
-- İki ekranla (ikincisi kablosuz bağlı bir tablet) ekran taraması denendi ve çalışıyor; tek ekranda %150 ve %175 ölçek de sorunsuz. Ekranlar arasında farklı ölçekleme (ör. %100 + %150) varken alan seçme henüz ayrıntılı denenmedi. Uygulama monitör başına DPI uyumlu yazıldı; bu kurulumlarda bir sorun görürseniz lütfen [bildirin](https://github.com/umitkrkmz/qrpeek/issues/new/choose).
 - ARM64 işlemcili Windows 11 bilgisayarlarda (ör. Snapdragon X) henüz test edilmedi. Uygulama işlemciden bağımsız derlendiği için orada doğal olarak çalışması beklenir; sorun görürseniz lütfen bildirin.
 
 ### Kaynaktan derleme
@@ -114,7 +119,6 @@ dotnet test
 
 ### Known limitations
 
-- Scanning with two screens (the second a wirelessly connected tablet) has been tried and works, and 150% and 175% scaling on a single screen are fine. Selecting an area with mixed scaling between screens (e.g. 100% + 150%) hasn't been tried in depth yet. The app is written to be per-monitor DPI aware; if you see a problem on such a setup, please [report it](https://github.com/umitkrkmz/qrpeek/issues/new/choose).
 - Not yet tested on ARM64 Windows 11 PCs (e.g. Snapdragon X). The app is built CPU-independent, so it's expected to run natively there; if you see a problem, please report it.
 
 ### Build from source

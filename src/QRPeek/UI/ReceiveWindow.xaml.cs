@@ -51,7 +51,7 @@ namespace QRPeek.UI
         {
             Stop();
             string folder = App.Instance.ReceiveFolder;
-            FolderText.Text = folder;
+            FolderText.Text = ReceivedFiles.Display(folder, Native.DownloadsFolder(), S.DownloadsName);
             FolderText.ToolTip = folder;
             if (!ReceivedFiles.CanWrite(folder))
             {
@@ -252,7 +252,7 @@ namespace QRPeek.UI
                 App app = App.Instance;
                 app.Settings.ReceiveFolder = dlg.SelectedPath;
                 app.SaveSettings();
-                FolderText.Text = dlg.SelectedPath;
+                FolderText.Text = ReceivedFiles.Display(dlg.SelectedPath, Native.DownloadsFolder(), S.DownloadsName);
                 FolderText.ToolTip = dlg.SelectedPath;
                 if (_recv != null) _recv.Folder = dlg.SelectedPath;
                 else Start(); // e.g. the old folder wasn't writable

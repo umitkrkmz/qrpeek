@@ -51,6 +51,17 @@ namespace QRPeek.Tests
         }
 
         [Theory]
+        [InlineData(@"C:\Users\ayse\Downloads\QRPeek", @"İndirilenler\QRPeek")]
+        [InlineData(@"C:\Users\ayse\Downloads", "İndirilenler")]
+        [InlineData(@"c:\users\AYSE\downloads\a\b\", @"İndirilenler\a\b\")]
+        [InlineData(@"C:\Users\ayse\DownloadsOld\x", @"C:\Users\ayse\DownloadsOld\x")]
+        [InlineData(@"D:\Inbox", @"D:\Inbox")]
+        public void Shows_the_folder_without_the_user_name(string folder, string expected)
+        {
+            Assert.Equal(expected, ReceivedFiles.Display(folder, @"C:\Users\ayse\Downloads", "İndirilenler"));
+        }
+
+        [Theory]
         [InlineData("setup.exe", true)]
         [InlineData("run.PS1", true)]
         [InlineData("link.lnk", true)]

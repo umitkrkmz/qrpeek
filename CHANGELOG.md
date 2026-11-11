@@ -29,7 +29,7 @@ This file lists notable changes to QRPeek, by release.
 - Gönderme penceresi içeriği panodan kendiliğinden aldığında bunu belirtir ("Panodan alındı").
 
 **Diğer**
-- İki ekranla (kablosuz bağlı tablet) tarama ve tek ekranda %150 / %175 ölçek denendi.
+- Birden çok ekran ve ekranlar arasında farklı ölçek (%100 + %150, kablosuz bağlı tablet) denendi; tarama, görüntü netliği ve pencere yerleşimi sorunsuz. README'deki "denenmedi" notu kaldırıldı.
 - "Yaklaşık 1 MB" ifadesi belgelerden kaldırıldı; QRPeek küçük kalıyor ama boyut sabit bir sayı değil.
 
 ### [0.1.0] — 2026-11-11 (ilk sürüm)
@@ -90,7 +90,7 @@ This file lists notable changes to QRPeek, by release.
 - The send window says when it picked up the clipboard by itself ("From your clipboard").
 
 **Other**
-- Tried with two screens (a wirelessly connected tablet) and 150% / 175% scaling on a single screen.
+- Tried with several screens and mixed scaling between them (100% + 150%, a wirelessly connected tablet): scanning, sharpness and window placement are fine. The "untested" note is gone from the README.
 - Dropped "about 1 MB" from the docs; QRPeek stays small, but the size isn't a fixed number.
 
 ### [0.1.0] — 2026-11-11 (first release)

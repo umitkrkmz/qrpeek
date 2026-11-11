@@ -151,6 +151,19 @@ namespace QRPeek.Core
             }
         }
 
+        /// <summary>
+        /// How to show a folder: "Downloads\QRPeek" instead of
+        /// "C:\Users\name\Downloads\QRPeek" (shorter, and no user name on screen).
+        /// </summary>
+        public static string Display(string folder, string downloads, string downloadsName)
+        {
+            if (string.IsNullOrEmpty(folder) || string.IsNullOrEmpty(downloads)) return folder;
+            string d = downloads.TrimEnd('\\');
+            if (string.Equals(folder.TrimEnd('\\'), d, StringComparison.OrdinalIgnoreCase)) return downloadsName;
+            if (folder.StartsWith(d + "\\", StringComparison.OrdinalIgnoreCase)) return downloadsName + folder.Substring(d.Length);
+            return folder;
+        }
+
         /// <summary>The default receive folder: Downloads\QRPeek.</summary>
         public static string DefaultFolder() => Path.Combine(Native.DownloadsFolder(), "QRPeek");
 

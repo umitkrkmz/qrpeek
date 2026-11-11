@@ -212,6 +212,8 @@ namespace QRPeek
 
         // Receive from phone (LAN upload with approval)
         public static string ReceiveFromPhone => T("Telefondan al", "Receive from phone");
+        /// <summary>Shorter, for the send window's button row (the English full name pushes "Close" out).</summary>
+        public static string ReceiveButton => T("Telefondan al", "Receive files");
         public static string SetReceiveHotkey => T("Telefondan dosya alma kısayolu", "Receive from phone shortcut");
         public static string RecvScanHint => T("Telefonun ya da tabletin kamerasıyla okutun", "Scan with your phone's or tablet's camera");
         public static string RecvHint => T("Cihaz bu bilgisayarla aynı Wi-Fi ağında olmalı. Siz onaylamadan hiçbir dosya alınmaz. Windows izin sorarsa “Erişime izin ver”i seçin.",
@@ -238,6 +240,7 @@ namespace QRPeek
         public static string ShowInFolder => T("Klasörde göster", "Show in folder");
         public static string RecvFolder => T("Kaydedilecek yer", "Save to");
         public static string ChangeFolder => T("Değiştir…", "Change…");
+        public static string DownloadsName => T("İndirilenler", "Downloads");
         public static string RecvExpired => T("Süre doldu. Yeniden almak için “Telefondan al”ı tekrar açın.", "Time's up. Open “Receive from phone” again to receive more.");
         public static string RecvOffline => T("Bu bilgisayar bir ağa bağlı değil; dosya alınamıyor.", "This PC isn't connected to a network, so files can't be received.");
         public static string UnknownDevice => T("Bilinmeyen cihaz", "Unknown device");
