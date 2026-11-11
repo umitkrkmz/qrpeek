@@ -11,7 +11,7 @@ This file lists notable changes to QRPeek, by release.
 
 ## Türkçe
 
-### [Unreleased] — 0.2.0
+### [0.2.0] — 2026-11-11
 
 **Telefondan al**
 - Telefondan ya da tabletten bilgisayara fotoğraf ve dosya: cihaza uygulama kurmadan, QR'ı okutup tarayıcıdan seçerek. Bildirim alanında "Telefondan al", gönderme penceresinde bir düğme ya da isteğe bağlı kısayol.
@@ -72,7 +72,7 @@ This file lists notable changes to QRPeek, by release.
 
 ## English
 
-### [Unreleased] — 0.2.0
+### [0.2.0] — 2026-11-11
 
 **Receive from phone**
 - Photos and files from a phone or tablet to the PC, with nothing to install on the device: scan the QR and pick the files in the browser. "Receive from phone" in the notification area, a button in the send window, or an optional shortcut.
