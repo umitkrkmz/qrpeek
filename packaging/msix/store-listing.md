@@ -49,14 +49,14 @@ the last one. Rules that shaped it (Microsoft Store Policies):
 
 **Kısa açıklama** (≤ 270 karakter)
 
-> Ekrandaki QR kodlarını kamera ya da telefon olmadan okuyun, yeni QR kodları oluşturun. Tek kısayolla tüm ekranları tarar, bağlantının gerçek hedefini gösterir, link ve dosyaları telefonunuza gönderir. Hesap yok, reklam yok, telemetri yok.
+> Ekrandaki QR kodlarını kamera ya da telefon olmadan okuyun, yeni QR kodları oluşturun. Tek kısayolla tüm ekranları tarar, bağlantının gerçek hedefini gösterir, telefonunuzla link ve dosya alıp verir. Hesap yok, reklam yok, telemetri yok.
 
 **Açıklama**
 
 ```
 QRPeek, ekranınızda gördüğünüz QR kodlarını kamera ya da telefon kullanmadan okur: bir web sayfasında, PDF'te, toplantı sunumunda, videoda veya bir görselde. Aynı zamanda logolu ve desenli QR kodları da oluşturur.
 
-Ctrl + Alt + Q'ya basın; QRPeek tüm monitörleri tarar ve ekrandaki kodların hepsini bulur. Kod çok küçükse ekran donar, kodun etrafını seçersiniz. Tarayıcıda küçülmüş yoğun kodlar (örneğin e-Arşiv faturaları) da okunur.
+Ctrl + Alt + Q'ya basın; QRPeek tüm monitörleri tarar ve ekrandaki kodların hepsini bulur. Kod çok küçükse ekran donar, kodun etrafını seçersiniz. Tarayıcıda küçülmüş yoğun kodlar (örneğin e-Arşiv faturaları) da okunur. Birden çok ekranınız varsa kodun hangi ekranda olduğu da yazar.
 
 Okunan her kod anlaşılır bir karta dönüşür:
 
@@ -83,7 +83,7 @@ Açık kaynak: QRPeek GPL-3.0 lisanslı açık kaynak bir projedir ve kaynak kod
 
 **Bu sürümdeki yenilikler**
 
-> 0.2.0 — Yeni: Telefondan al. Telefon ya da tabletten bilgisayara fotoğraf ve dosya; cihaza uygulama kurmadan, yalnızca sizin onayınızla. Dosyalar yerel ağdan gelir, İndirilenler\QRPeek klasörüne kaydedilir.
+> 0.2.0 — Yeni: Telefondan al. Telefon ya da tabletten bilgisayara fotoğraf ve dosya; cihaza uygulama kurmadan, yalnızca sizin onayınızla. Dosyalar yerel ağdan gelir ve İndirilenler\QRPeek klasörüne kaydedilir, hiçbiri kendiliğinden açılmaz. Ayrıca: birden çok ekranda kodun hangi ekranda bulunduğu gösterilir; ana pencerede "Telefona gönder / al" düğmesi.
 
 (0.1.0'da, ilk başvuruda, boş bırakılmıştı; Partner Center böyle istiyor.)
 
@@ -134,14 +134,14 @@ Açık kaynak: QRPeek GPL-3.0 lisanslı açık kaynak bir projedir ve kaynak kod
 
 **Short description** (≤ 270 characters)
 
-> Read QR codes on your screen without a camera or phone, and create new ones. One shortcut scans every screen, shows where a link really goes, and sends links and files to your phone. No account, no ads, no telemetry.
+> Read QR codes on your screen without a camera or phone, and create new ones. One shortcut scans every screen, shows where a link really goes, and swaps links and files with your phone. No account, no ads, no telemetry.
 
 **Description**
 
 ```
 QRPeek reads the QR codes you see on your screen without a camera or phone: on a web page, in a PDF, in a meeting presentation, in a video or in an image. It also creates QR codes, with logos and patterns.
 
-Press Ctrl + Alt + Q and QRPeek scans every monitor and finds every code on screen. If a code is too small, the screen freezes and you select the area around it. Dense codes shrunk by the browser (such as Turkish e-invoices) are read too.
+Press Ctrl + Alt + Q and QRPeek scans every monitor and finds every code on screen. If a code is too small, the screen freezes and you select the area around it. Dense codes shrunk by the browser (such as Turkish e-invoices) are read too. With more than one screen, it also says which screen the code was on.
 
 Every code becomes a clear card:
 
@@ -168,7 +168,7 @@ Open source: QRPeek is an open-source project under GPL-3.0, with its source cod
 
 **What's new in this version**
 
-> 0.2.0 — New: Receive from phone. Photos and files from a phone or tablet to the PC, with nothing to install on the device and only with your approval. Files come over your local network and are saved to Downloads\QRPeek.
+> 0.2.0 — New: Receive from phone. Photos and files from a phone or tablet to the PC, with nothing to install on the device and only with your approval. Files come over your local network, are saved to Downloads\QRPeek and never open on their own. Also: with more than one screen, the result says which screen a code was on; the main window has a "Phone: send / receive" button.
 
 (Left empty in 0.1.0, the first submission, as Partner Center asks.)
 
@@ -219,7 +219,7 @@ Open source: QRPeek is an open-source project under GPL-3.0, with its source cod
 
 | Item | Size | Status |
 |---|---|---|
-| Screenshots (per language) | 1920×1080 PNG, 5 each: read a QR on a page + link card, Wi-Fi + e-invoice cards, send to phone + main window, generator with logo, main window + privacy points | done (`build/store-assets/shots/tr-1..5.png`, `en-1..5.png`, not in git) |
+| Screenshots (per language) | 1920×1080 PNG, 6 each (0.2.0): read a QR on a page + link card, receive from phone (QR + approval card), Wi-Fi + e-invoice cards, send to phone + main window, generator with logo, main window + privacy points | done (`build/store-assets/shots/tr-1..6.png`, `en-1..6.png`, not in git; in Partner Center, replace the old 5 and keep this order) |
 | 1:1 box art (Store logo) | 1080×1080 PNG | done (`build/store-assets/box-1080x1080.png`) |
 | 2:3 poster art | 720×1080 PNG | done (`build/store-assets/poster-720x1080.png`) |
 | Store display tiles | 300×300, 150×150, 71×71 PNG | done (`build/store-assets/tile-*.png`) |
