@@ -24,10 +24,10 @@ dotnet test
 
 Ayrıntılar ve gerekçeler [AGENTS.md](AGENTS.md)'de. Özetle:
 
-- **Hedef `net48` kalır.** Uygulamanın ~1 MB olması ve kurulum gerektirmemesi buna bağlı.
+- **Hedef `net48` kalır.** Uygulamanın küçük kalması ve kurulum gerektirmemesi buna bağlı.
 - **Yeni bağımlılık eklemeden önce sor.** Küçük ve GPL-3.0 ile uyumlu olmalı.
 - **Her arayüz metni `S.cs` içinde, Türkçe ve İngilizce birlikte** yazılır.
-- **QRPeek kendi başına internete çıkmaz.** Ağ kullanan yerler belli ve sınırlı (`LinkResolver`, `LanShare`, `UpdateChecker`); yenisini eklemeden önce tartışalım.
+- **QRPeek kendi başına internete çıkmaz.** Ağ kullanan yerler belli ve sınırlı (`LinkResolver`, `LanShare`, `LanReceive`, `UpdateChecker`); yenisini eklemeden önce tartışalım.
 - **Bir QR kodu yalnızca güvenli bağlantı türlerini açabilir** ve sırlar (2FA, Wi-Fi şifresi) geçmişe ya da kendiliğinden panoya gitmez.
 - **Üreticideki her stil okunabilir kalmalı** (`StyleTests`).
 
@@ -68,10 +68,10 @@ Output: `src/QRPeek/bin/Release/net48/QRPeek.exe`.
 
 Details and reasons are in [AGENTS.md](AGENTS.md). In short:
 
-- **The target stays `net48`.** That's what keeps the app ~1 MB with nothing to install.
+- **The target stays `net48`.** That's what keeps the app small with nothing to install.
 - **Ask before adding a dependency.** It must be small and GPL-3.0 compatible.
 - **Every UI string lives in `S.cs`, in Turkish and English together.**
-- **QRPeek doesn't go online on its own.** Network use is limited to known places (`LinkResolver`, `LanShare`, `UpdateChecker`); let's discuss before adding another.
+- **QRPeek doesn't go online on its own.** Network use is limited to known places (`LinkResolver`, `LanShare`, `LanReceive`, `UpdateChecker`); let's discuss before adding another.
 - **A QR code may only open safe link types**, and secrets (2FA, Wi-Fi passwords) never go to history or to the clipboard on their own.
 - **Every generator style must stay readable** (`StyleTests`).
 

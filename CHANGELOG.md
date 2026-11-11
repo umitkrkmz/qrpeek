@@ -11,6 +11,27 @@ This file lists notable changes to QRPeek, by release.
 
 ## Türkçe
 
+### [Unreleased] — 0.2.0
+
+**Telefondan al**
+- Telefondan ya da tabletten bilgisayara fotoğraf ve dosya: cihaza uygulama kurmadan, QR'ı okutup tarayıcıdan seçerek. Bildirim alanında "Telefondan al", gönderme penceresinde bir düğme ya da isteğe bağlı kısayol.
+- Bilgisayarda bağlanan cihaz (ör. "iPhone · Safari", IP) ve iki ekranda aynı görünen 4 haneli eşleşme kodu.
+- Telefon önce yalnızca dosya listesini yollar; bilgisayarda **Kabul et / Reddet** sorulur, onay olmadan hiçbir şey yazılmaz. Program ya da betik dosyaları (.exe, .bat, .ps1…) için ayrıca uyarı.
+- Oturum ilk bağlanan cihaza kilitlenir; QR'ı başka biri okutsa giremez. İşlem olmazsa 10 dakikada kapanır.
+- Dosyalar İndirilenler\QRPeek'e (değiştirilebilir) kaydedilir: dosya adı temizlenir (klasör yolu, `:`, CON gibi adlar, ters yazı hileleri), hiçbir dosyanın üstüne yazılmaz, "internetten indirildi" olarak işaretlenir ve hiçbiri kendiliğinden açılmaz. Yarıda kalan aktarımın yarım dosyası silinir.
+- Tek seferde en fazla 100 dosya ve toplam 4 GB; diskte yer yoksa kabul edilemez.
+
+**Ekrandan okuma**
+- Birden çok ekran varken sonuç kartı kodun nerede bulunduğunu söyler: "Ana ekranda", "Soldaki ekranda", "Sağdaki ekranda"…
+
+**Arayüz**
+- Ana penceredeki düğme "Telefona gönder / al" oldu.
+- Gönderme penceresi içeriği panodan kendiliğinden aldığında bunu belirtir ("Panodan alındı").
+
+**Diğer**
+- İki ekranla (kablosuz bağlı tablet) tarama ve tek ekranda %150 / %175 ölçek denendi.
+- "Yaklaşık 1 MB" ifadesi belgelerden kaldırıldı; QRPeek küçük kalıyor ama boyut sabit bir sayı değil.
+
 ### [0.1.0] — 2026-11-11 (ilk sürüm)
 
 **Ekrandan okuma**
@@ -50,6 +71,27 @@ This file lists notable changes to QRPeek, by release.
 ---
 
 ## English
+
+### [Unreleased] — 0.2.0
+
+**Receive from phone**
+- Photos and files from a phone or tablet to the PC, with nothing to install on the device: scan the QR and pick the files in the browser. "Receive from phone" in the notification area, a button in the send window, or an optional shortcut.
+- The PC shows which device connected (e.g. "iPhone · Safari", IP) and a 4-digit match code that appears on both screens.
+- The phone first sends only the list of files; the PC asks **Accept / Reject** and nothing is written without approval. Extra warning for programs and scripts (.exe, .bat, .ps1…).
+- The session locks to the first device that connects; anyone else scanning the QR can't join. It closes after 10 idle minutes.
+- Files are saved to Downloads\QRPeek (changeable): names are cleaned up (folder paths, `:`, names like CON, right-to-left tricks), nothing is ever overwritten, files are marked as downloaded from the internet and nothing opens on its own. An interrupted transfer's partial file is deleted.
+- At most 100 files and 4 GB in total at once; a list can't be accepted without enough disk space.
+
+**Reading from the screen**
+- With more than one screen, the result card says where the code was: "On the main screen", "On the left screen", "On the right screen"…
+
+**Interface**
+- The main window button is now "Phone: send / receive".
+- The send window says when it picked up the clipboard by itself ("From your clipboard").
+
+**Other**
+- Tried with two screens (a wirelessly connected tablet) and 150% / 175% scaling on a single screen.
+- Dropped "about 1 MB" from the docs; QRPeek stays small, but the size isn't a fixed number.
 
 ### [0.1.0] — 2026-11-11 (first release)
 

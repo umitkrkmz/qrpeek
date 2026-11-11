@@ -87,7 +87,7 @@
             <Button x:Name="SendButton" Click="OnSend" Margin="0,0,5,0" Padding="12,10" HorizontalContentAlignment="Left">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="&#xE8EA;" Style="{StaticResource Icon}" FontSize="18" Margin="0,0,10,0" />
-                    <TextBlock Text="{x:Static local:S.SendToPhone}" VerticalAlignment="Center" />
+                    <TextBlock Text="{x:Static local:S.SendOrReceive}" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
             <Button Click="OnCreate" Margin="5,0,0,0" Padding="12,10" HorizontalContentAlignment="Left">

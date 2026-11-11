@@ -53,6 +53,17 @@ namespace QRPeek
         public static string NothingFound => T("QR kodu bulunamadı", "No QR code found");
         public static string NothingFoundHint => T("Kod çok küçük, çok yoğun ya da kısmen kapalı olabilir. Sayfayı yakınlaştırıp (Ctrl + fare tekerleği) ya da kodun etrafını seçerek tekrar deneyin.",
                                                    "The code may be too small, too dense or partly covered. Zoom in on the page (Ctrl + mouse wheel) or select the area around the code and try again.");
+        internal static string OnScreen(QRPeek.Core.ScreenPlace p)
+        {
+            switch (p)
+            {
+                case QRPeek.Core.ScreenPlace.Left: return T("Soldaki ekranda", "On the left screen");
+                case QRPeek.Core.ScreenPlace.Right: return T("Sağdaki ekranda", "On the right screen");
+                case QRPeek.Core.ScreenPlace.Above: return T("Üstteki ekranda", "On the upper screen");
+                case QRPeek.Core.ScreenPlace.Below: return T("Alttaki ekranda", "On the lower screen");
+                default: return T("Ana ekranda", "On the main screen");
+            }
+        }
         public static string FoundCount(int n) => n == 1 ? T("1 QR kodu bulundu", "1 QR code found") : string.Format(T("{0} QR kodu bulundu", "{0} QR codes found"), n);
         public static string Copy => T("Kopyala", "Copy");
         public static string Copied => T("Kopyalandı", "Copied");
@@ -160,8 +171,8 @@ namespace QRPeek
         public static string LangAuto => T("Sistem dili", "System language");
         public static string LangRestart => T("Dil değişikliği QRPeek yeniden açılınca geçerli olur.", "The language change applies when QRPeek is reopened.");
         public static string About => T("Hakkında", "About");
-        public static string AboutText => T("QRPeek ücretsiz ve açık kaynaklıdır (GPL-3.0-or-later). Her şey bu bilgisayarda işlenir, hiçbir veri toplanmaz. QRPeek internete yalnızca “Gerçek hedefi göster”e bastığınızda ve (GitHub sürümünde, ayar açıksa) günde bir kez yeni sürüm denetimi için çıkar; “Telefona gönder” sadece yerel ağınızı kullanır.",
-                                            "QRPeek is free and open source (GPL-3.0-or-later). Everything is processed on this PC and no data is collected. QRPeek only goes online when you press “Show real destination” and (GitHub build, if enabled) once a day to check for a new version; “Send to phone” uses your local network only.");
+        public static string AboutText => T("QRPeek ücretsiz ve açık kaynaklıdır (GPL-3.0-or-later). Her şey bu bilgisayarda işlenir, hiçbir veri toplanmaz. QRPeek internete yalnızca “Gerçek hedefi göster”e bastığınızda ve (GitHub sürümünde, ayar açıksa) günde bir kez yeni sürüm denetimi için çıkar; “Telefona gönder” ve “Telefondan al” sadece yerel ağınızı kullanır.",
+                                            "QRPeek is free and open source (GPL-3.0-or-later). Everything is processed on this PC and no data is collected. QRPeek only goes online when you press “Show real destination” and (GitHub build, if enabled) once a day to check for a new version; “Send to phone” and “Receive from phone” use your local network only.");
         public static string SourceCode => T("Kaynak kod", "Source code");
         public static string ThirdParty => T("Üçüncü taraf lisansları", "Third-party licenses");
         public static string PrivacyPolicy => T("Gizlilik politikası", "Privacy policy");
@@ -178,6 +189,8 @@ namespace QRPeek
         public static string ImageFilter => T("Görseller", "Images") + "|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff;*.webp;*.ico";
         // Send to phone (clipboard QR, LAN file sharing)
         public static string SendToPhone => T("Telefona gönder", "Send to phone");
+        public static string SendOrReceive => T("Telefona gönder / al", "Phone: send / receive");
+        public static string FromClipboard => T("Panodan alındı: en son kopyaladığınız içerik", "From your clipboard: the last thing you copied");
         public static string SendScanHint => T("Telefonun kamerasıyla okutun", "Scan with your phone's camera");
         public static string SendEmpty => T("Panoda gönderilecek bir şey yok. Bir dosyayı buraya sürükleyin ya da seçin; veya bir metin, link, görsel kopyalayıp tekrar deneyin.",
                                             "Nothing to send on the clipboard. Drag a file here or choose one; or copy some text, a link or an image and try again.");
@@ -196,6 +209,56 @@ namespace QRPeek
         public static string TextTooLongForQr => T("Metin bir QR'a sığmayacak kadar uzun, .txt dosyası olarak gönderiliyor.", "The text is too long for a QR code, so it's sent as a .txt file.");
         public static string ClipboardFileName => T("pano", "clipboard");
         public static string SetSendHotkey => T("Panodakini telefona gönderme kısayolu", "Send clipboard to phone shortcut");
+
+        // Receive from phone (LAN upload with approval)
+        public static string ReceiveFromPhone => T("Telefondan al", "Receive from phone");
+        public static string SetReceiveHotkey => T("Telefondan dosya alma kısayolu", "Receive from phone shortcut");
+        public static string RecvScanHint => T("Telefonun ya da tabletin kamerasıyla okutun", "Scan with your phone's or tablet's camera");
+        public static string RecvHint => T("Cihaz bu bilgisayarla aynı Wi-Fi ağında olmalı. Siz onaylamadan hiçbir dosya alınmaz. Windows izin sorarsa “Erişime izin ver”i seçin.",
+                                           "The device must be on the same Wi-Fi as this PC. Nothing is received until you approve it. If Windows asks, choose “Allow access”.");
+        public static string RecvWaiting => T("Bir cihazın bağlanması bekleniyor…", "Waiting for a device…");
+        public static string RecvConnected(string device) => string.Format(T("Bağlandı: {0}", "Connected: {0}"), device);
+        public static string RecvCode => T("Eşleşme kodu", "Match code");
+        public static string RecvCodeHint => T("Telefondaki kodla aynı olmalı. Değilse pencereyi kapatın.", "It should match the code on the phone. If it doesn't, close this window.");
+        public static string RecvPickOnPhone => T("Şimdi telefonda gönderilecek dosyaları seçin.", "Now choose the files to send on the phone.");
+        public static string RecvOffer(int n, string size) => n == 1
+            ? string.Format(T("1 dosya göndermek istiyor · {0}", "Wants to send 1 file · {0}"), size)
+            : string.Format(T("{0} dosya göndermek istiyor · {1}", "Wants to send {0} files · {1}"), n, size);
+        public static string RecvMore(int n) => string.Format(T("+{0} dosya daha", "+{0} more"), n);
+        public static string RecvRisky => T("Listede program ya da betik dosyası var (.exe, .bat, .ps1…). Göndereni tanımıyorsanız kabul etmeyin; tanıyorsanız bile açmadan önce düşünün.",
+                                            "The list contains programs or scripts (.exe, .bat, .ps1…). Don't accept if you don't know the sender, and think twice before opening them even if you do.");
+        public static string RecvNoSpace => T("Diskte bu dosyalar için yeterli boş alan yok.", "There isn't enough free disk space for these files.");
+        public static string Accept => T("Kabul et", "Accept");
+        public static string Reject => T("Reddet", "Reject");
+        public static string RecvReceiving(int pct) => string.Format(T("Alınıyor… %{0}", "Receiving… {0}%"), pct);
+        public static string RecvDone(int n) => n == 1 ? T("1 dosya alındı", "1 file received") : string.Format(T("{0} dosya alındı", "{0} files received"), n);
+        public static string RecvRejected => T("Reddedildi. Telefon başka dosya gönderebilir.", "Rejected. The phone can send other files.");
+        public static string RecvFailed => T("Aktarım yarıda kesildi; yarım kalan dosya silindi.", "The transfer was interrupted; the incomplete file was deleted.");
+        public static string RecvSaveFailed => T("Dosyalar bu klasöre kaydedilemiyor. Başka bir klasör seçin.", "Files can't be saved to this folder. Choose another one.");
+        public static string ShowInFolder => T("Klasörde göster", "Show in folder");
+        public static string RecvFolder => T("Kaydedilecek yer", "Save to");
+        public static string ChangeFolder => T("Değiştir…", "Change…");
+        public static string RecvExpired => T("Süre doldu. Yeniden almak için “Telefondan al”ı tekrar açın.", "Time's up. Open “Receive from phone” again to receive more.");
+        public static string RecvOffline => T("Bu bilgisayar bir ağa bağlı değil; dosya alınamıyor.", "This PC isn't connected to a network, so files can't be received.");
+        public static string UnknownDevice => T("Bilinmeyen cihaz", "Unknown device");
+
+        // The page on the phone
+        public static string PgIntro => T("Seçtiğiniz dosyalar doğrudan bilgisayara gider, internete yüklenmez. Bilgisayarda onay verilmeden hiçbir şey gönderilmez.",
+                                          "The files you choose go straight to the PC, not to the internet. Nothing is sent until it's approved on the PC.");
+        public static string PgCode => T("Kod", "Code");
+        public static string PgConnecting => T("Bağlanıyor…", "Connecting…");
+        public static string PgPick => T("Dosya seç", "Choose files");
+        public static string PgPickMore => T("Başka dosya gönder", "Send more files");
+        public static string PgWaiting => T("Bilgisayarda onay bekleniyor…", "Waiting for approval on the PC…");
+        public static string PgSending => T("Gönderiliyor…", "Sending…");
+        public static string PgDone => T("Gönderildi ✓", "Sent ✓");
+        public static string PgRejected => T("Bilgisayarda reddedildi.", "Rejected on the PC.");
+        public static string PgBusy => T("Bu bağlantıyı başka bir cihaz kullanıyor. Bilgisayarda “Telefondan al”ı yeniden açıp yeni kodu okutun.",
+                                         "Another device is using this link. Open “Receive from phone” again on the PC and scan the new code.");
+        public static string PgClosed => T("Bağlantı kapandı. Bilgisayarda “Telefondan al”ı yeniden açıp yeni kodu okutun.",
+                                           "The connection has closed. Open “Receive from phone” again on the PC and scan the new code.");
+        public static string PgFailed => T("Gönderim yarıda kesildi. Tekrar deneyin.", "Sending was interrupted. Try again.");
+        public static string PgLimit => T("Tek seferde en fazla 100 dosya ve toplam 4 GB gönderilebilir.", "At most 100 files and 4 GB in total can be sent at once.");
 
         // Link resolver
         public static string ShowRealTarget => T("Gerçek hedefi göster", "Show real destination");

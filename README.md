@@ -53,11 +53,12 @@ A small Windows tool that reads QR codes **on your screen**, with no camera or p
 - **Tek kısayol, tüm ekranlar:** `Ctrl + Alt + Q` ile tüm monitörler taranır; alan seçmeye gerek yok, ekrandaki kodların hepsi bulunur. Kod çok küçükse ekran donar, etrafını sürükleyip seçersiniz. Tarayıcıda küçülmüş yoğun kodlar (ör. e-Arşiv faturası) da okunur.
 - **Güvenli bağlantılar:** hiçbir şey kendiliğinden açılmaz. Önce gideceği site gösterilir; şifresiz (http) bağlantı, IP adresi, kısaltılmış link, sahte görünümlü alan adı ve `@` hilesi için uyarı verilir. "Gerçek hedefi göster", `bit.ly` gibi linklerin nereye gittiğini tarayıcı açmadan bulur.
 - **Telefona gönder (`Ctrl + Alt + W`):** kopyaladığınız link ya da metin anında büyük bir QR olur, telefonun kamerasıyla okutursunuz. Dosya, fotoğraf ve uzun metinler **yerel ağ üzerinden**, tek kullanımlık ve 10 dakika geçerli bir linkle gider; buluta yükleme yok.
+- **Telefondan al:** telefona ya da tablete uygulama kurmadan fotoğraf ve dosyaları bilgisayara alın. Cihaz QR'ı okutur, dosyaları seçer; bilgisayarda listeyi görüp **siz onaylamadan hiçbir şey alınmaz**. Dosyalar İndirilenler\QRPeek klasörüne gider, hiçbiri kendiliğinden açılmaz.
 - **Akıllı kartlar:** Wi-Fi (tek tıkla bağlan, şifreyi kopyala), 2FA kurulum kodu (anahtar maskeli, geçmişe yazılmaz), e-Fatura / e-Arşiv (VKN, tarih, KDV, ödenecek tutar; Excel'e CSV), e-posta, telefon, SMS, kişi (.vcf), konum.
 - **QR oluşturucu:** metin, bağlantı ya da Wi-Fi; renk, desen (kare, yuvarlak, nokta), köşe işaretleri, ortaya QRPeek logosu ya da kendi logonuz. Her kod tasarlanırken QRPeek tarafından okunarak doğrulanır. PNG, SVG ya da panoya.
 - **Ekranı izleme modu (isteğe bağlı):** sunumda, toplantıda ya da videoda bir QR belirince sağ altta küçük bir uyarı çıkar; Rahatsız Etmeyin modunda da çalışır.
 - **Görselden okuma:** sürükle-bırak, `Ctrl + V` ya da dosya seçerek.
-- **Küçük ve kurulumsuz:** yaklaşık 1 MB; Windows 10/11'de hazır gelen .NET Framework 4.8 ile çalışır. Türkçe ve İngilizce, açık ve koyu tema.
+- **Küçük ve kurulumsuz:** Windows 10/11'de hazır gelen .NET Framework 4.8 ile çalışır, ek bir şey indirmez. Türkçe ve İngilizce, açık ve koyu tema.
 
 ### İndir
 
@@ -72,7 +73,7 @@ A small Windows tool that reads QR codes **on your screen**, with no camera or p
 
 ### Bilinen kısıtlar
 
-- Çoklu monitör ve monitörler arasında farklı ölçekleme (ör. %100 + %150) henüz test edilmedi. Uygulama monitör başına DPI uyumlu yazıldı; bu kurulumlarda bir sorun görürseniz lütfen [bildirin](https://github.com/umitkrkmz/qrpeek/issues/new/choose).
+- İki ekranla (ikincisi kablosuz bağlı bir tablet) ekran taraması denendi ve çalışıyor; tek ekranda %150 ve %175 ölçek de sorunsuz. Ekranlar arasında farklı ölçekleme (ör. %100 + %150) varken alan seçme henüz ayrıntılı denenmedi. Uygulama monitör başına DPI uyumlu yazıldı; bu kurulumlarda bir sorun görürseniz lütfen [bildirin](https://github.com/umitkrkmz/qrpeek/issues/new/choose).
 - ARM64 işlemcili Windows 11 bilgisayarlarda (ör. Snapdragon X) henüz test edilmedi. Uygulama işlemciden bağımsız derlendiği için orada doğal olarak çalışması beklenir; sorun görürseniz lütfen bildirin.
 
 ### Kaynaktan derleme
@@ -93,11 +94,12 @@ dotnet test
 - **One shortcut, every screen:** `Ctrl + Alt + Q` scans all monitors; no need to select an area, every code on screen is found. If a code is too small, the screen freezes and you drag around it. Dense codes shrunk by the browser (like Turkish e-invoices) are read too.
 - **Safe links:** nothing opens on its own. You see the real destination first, with warnings for plain http, bare IP addresses, URL shorteners, look-alike domains and the `@` trick. "Show real destination" finds where a `bit.ly`-style link goes, without opening a browser.
 - **Send to phone (`Ctrl + Alt + W`):** a copied link or text becomes a big QR; point your phone's camera at it. Files, photos and long text go **over the local network** through a one-off link valid for 10 minutes; nothing is uploaded to the cloud.
+- **Receive from phone:** get photos and files from a phone or tablet onto the PC with nothing to install on the device. It scans the QR and picks the files; the PC shows the list and **nothing is received until you approve it**. Files land in Downloads\QRPeek and nothing opens on its own.
 - **Smart cards:** Wi-Fi (join in one click, copy the password), 2FA setup codes (masked key, never written to history), Turkish e-Fatura / e-Arşiv invoices (tax IDs, date, VAT, amount due; CSV for Excel), email, phone, SMS, contact (.vcf), location.
 - **QR generator:** text, link or Wi-Fi; color, pattern (square, rounded, dots), corner markers, the QRPeek logo or your own in the middle. Every code is read back by QRPeek as you design it. PNG, SVG or clipboard.
 - **Watch mode (optional):** when a QR code appears in a presentation, meeting or video, a small pop-up shows up bottom-right; works with Do Not Disturb on.
 - **From images:** drag and drop, `Ctrl + V`, or pick a file.
-- **Small, nothing to install:** about 1 MB; runs on the .NET Framework 4.8 that ships with Windows 10/11. Turkish and English, light and dark theme.
+- **Small, nothing to install:** runs on the .NET Framework 4.8 that ships with Windows 10/11 and downloads nothing extra. Turkish and English, light and dark theme.
 
 ### Download
 
@@ -112,7 +114,7 @@ dotnet test
 
 ### Known limitations
 
-- Multiple monitors and mixed scaling between monitors (e.g. 100% + 150%) have not been tested yet. The app is written to be per-monitor DPI aware; if you see a problem on such a setup, please [report it](https://github.com/umitkrkmz/qrpeek/issues/new/choose).
+- Scanning with two screens (the second a wirelessly connected tablet) has been tried and works, and 150% and 175% scaling on a single screen are fine. Selecting an area with mixed scaling between screens (e.g. 100% + 150%) hasn't been tried in depth yet. The app is written to be per-monitor DPI aware; if you see a problem on such a setup, please [report it](https://github.com/umitkrkmz/qrpeek/issues/new/choose).
 - Not yet tested on ARM64 Windows 11 PCs (e.g. Snapdragon X). The app is built CPU-independent, so it's expected to run natively there; if you see a problem, please report it.
 
 ### Build from source

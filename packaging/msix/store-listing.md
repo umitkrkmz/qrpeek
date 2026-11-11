@@ -34,14 +34,14 @@ the last one. Rules that shaped it (Microsoft Store Policies):
 
 ## Submission options — restricted capability (runFullTrust, ≤ 500 characters)
 
-> QRPeek is a desktop (Win32, .NET Framework) app. It registers system-wide hotkeys, captures the screen to decode QR codes, shows a tray icon and overlay windows on every monitor, joins Wi-Fi networks through the native WLAN API, and briefly serves user-chosen files on the local network for its "send to phone" feature. This is not possible in an AppContainer. It installs no drivers or services, never elevates, and runs no code from outside the package.
+> QRPeek is a desktop (Win32, .NET Framework) app. It registers system-wide hotkeys, captures the screen to decode QR codes, shows a tray icon and overlay windows on every monitor, joins Wi-Fi networks through the native WLAN API, and briefly runs a local-network server to send files to, and receive user-approved files from, the user's phone. This is not possible in an AppContainer. It installs no drivers or services, never elevates, and runs no code from outside the package.
 
 ## Submission options — publishing and notes for certification
 
-- Publishing hold: **"Don't publish this submission until I select Publish now"**, so the Store release, the GitHub `v0.1.0` release and the README Store link go out the same day.
+- Publishing hold: **"Don't publish this submission until I select Publish now"**, so the Store release and the GitHub release (`v0.1.0`, `v0.2.0`…) go out the same day. GitHub is pushed only after the Store version is live.
 - Notes for certification (testers only, English):
 
-> No account or sign-in needed. To test: open any web page or image that shows a QR code and press Ctrl+Alt+Q (or click "Scan screen"); a card with the decoded content appears. Ctrl+Alt+W shows the clipboard text as a QR code. "Send to phone" serves files over the local network only, so Windows Firewall may ask for permission. "Connect" on a Wi-Fi card may make Windows ask for location access (Windows 11 24H2 and later). The app keeps running in the notification area after its window is closed; use Settings > Quit QRPeek to exit.
+> No account or sign-in needed. To test: open any web page or image that shows a QR code and press Ctrl+Alt+Q (or click "Scan screen"); a card with the decoded content appears. Ctrl+Alt+W shows the clipboard text as a QR code. "Send to phone" serves files over the local network only, so Windows Firewall may ask for permission. "Receive from phone" (tray menu, or the button in the send window) shows a QR code; open it on a phone or another device on the same network, pick files there, and they are saved to Downloads\QRPeek only after you press Accept on the PC. "Connect" on a Wi-Fi card may make Windows ask for location access (Windows 11 24H2 and later). The app keeps running in the notification area after its window is closed; use Settings > Quit QRPeek to exit.
 
 ---
 
@@ -68,20 +68,24 @@ Okunan her kod anlaşılır bir karta dönüşür:
 
 Telefona gönder (Ctrl + Alt + W): kopyaladığınız link ya da metin anında büyük bir QR olur, telefonun kamerasıyla okutursunuz. Dosyalar, fotoğraflar ve uzun metinler yalnızca yerel ağınız üzerinden, tek kullanımlık ve 10 dakika geçerli bir bağlantıyla gider; buluta hiçbir şey yüklenmez.
 
+Telefondan al: telefon ya da tablet QR'ı okutur ve dosyaları seçer; bilgisayarda listeyi görürsünüz ve siz onaylamadan hiçbir şey alınmaz. Cihaza uygulama kurmak gerekmez, dosyalar yalnızca yerel ağdan gelir, hiçbiri kendiliğinden açılmaz.
+
 QR oluşturucu: metin, bağlantı ya da Wi-Fi için; renk, desen (kare, yuvarlak, nokta), köşe işaretleri ve ortaya QRPeek logosu ya da kendi logonuz. QRPeek her kodu siz tasarlarken okuyarak doğrular, böylece çalışmayan bir kodu yazdırmazsınız. PNG, SVG ya da panoya.
 
 İsteğe bağlı ekranı izleme modu: sunumda, toplantıda ya da videoda bir QR belirince sağ altta küçük bir uyarı çıkar.
 
 Gizliliğiniz sizde: hesap yok, reklam yok, telemetri yok. Ekran görüntüleri yalnızca bellekte işlenir; kaydedilmez, gönderilmez. Wi-Fi'a bağlanırken Windows konum izni isteyebilir; QRPeek bunu yalnızca bağlantıyı doğrulamak için kullanır, konumunuzu okumaz.
 
-Küçük ve hızlı: yaklaşık 1 MB, bildirim alanında sessizce bekler, istenirse Windows ile başlar. Türkçe ve İngilizce arayüz, açık ve koyu tema.
+Küçük ve hızlı: bildirim alanında sessizce bekler, istenirse Windows ile başlar. Türkçe ve İngilizce arayüz, açık ve koyu tema.
 
 Açık kaynak: QRPeek GPL-3.0 lisanslı açık kaynak bir projedir ve kaynak kodu GitHub'da herkese açıktır (github.com/umitkrkmz/qrpeek). Store sürümü aynı uygulamadır; tek tıkla kurulur, güncellemeleri Store'dan kendiliğinden gelir. Satın alarak projenin gelişmesine destek olursunuz.
 ```
 
 **Bu sürümdeki yenilikler**
 
-> (İlk başvuruda boş bırakılır; Partner Center böyle istiyor.)
+> 0.2.0 — Yeni: Telefondan al. Telefon ya da tabletten bilgisayara fotoğraf ve dosya; cihaza uygulama kurmadan, yalnızca sizin onayınızla. Dosyalar yerel ağdan gelir, İndirilenler\QRPeek klasörüne kaydedilir.
+
+(0.1.0'da, ilk başvuruda, boş bırakılmıştı; Partner Center böyle istiyor.)
 
 **Ürün özellikleri** (en fazla 20, her biri ≤ 200 karakter)
 
@@ -94,8 +98,8 @@ Açık kaynak: QRPeek GPL-3.0 lisanslı açık kaynak bir projedir ve kaynak kod
 7. QR'daki Wi-Fi ağına tek tıkla bağlanma, şifre varsayılan olarak gizli
 8. 2FA kurulum kodlarını güvenle gösterme
 9. e-Fatura / e-Arşiv QR'ını okuma ve Excel'e (CSV) aktarma
-10. Kopyalanan link ya da metni QR ile telefona gönderme
-11. Dosya ve fotoğrafları yerel ağdan telefona gönderme, buluta yükleme yok
+10. Kopyalanan link, metin, dosya ve fotoğrafları telefona gönderme (yerel ağ, bulut yok)
+11. Telefondan ya da tabletten dosya alma: uygulama kurmadan, yalnızca sizin onayınızla
 12. Logolu, renkli ve desenli QR kodu oluşturma
 13. Oluşturulan kodun okunabilirliğini otomatik doğrulama
 14. PNG ve SVG olarak kaydetme, panoya kopyalama
@@ -149,20 +153,24 @@ Every code becomes a clear card:
 
 Send to phone (Ctrl + Alt + W): a link or text you copied becomes a big QR code; point your phone's camera at it. Files, photos and long text travel only over your local network, through a one-off link valid for 10 minutes; nothing is uploaded to the cloud.
 
+Receive from phone: a phone or tablet scans the QR code and picks files; the PC shows you the list and nothing is received until you approve it. Nothing to install on the device, files come over your local network only, and nothing opens on its own.
+
 QR generator: for text, links or Wi-Fi; color, pattern (square, rounded, dots), corner markers, and the QRPeek logo or your own in the middle. QRPeek reads every code back as you design it, so you never print a code that doesn't scan. PNG, SVG or clipboard.
 
 Optional watch mode: when a QR code appears in a presentation, meeting or video, a small pop-up shows up bottom-right.
 
 Your privacy stays yours: no account, no ads, no telemetry. Screen captures are processed in memory only, never saved or sent. When joining Wi-Fi, Windows may ask for location access; QRPeek uses it only to confirm the connection and never reads your location.
 
-Small and fast: about 1 MB, waits quietly in the notification area, and can start with Windows. Turkish and English interface, light and dark theme.
+Small and fast: waits quietly in the notification area, and can start with Windows. Turkish and English interface, light and dark theme.
 
 Open source: QRPeek is an open-source project under GPL-3.0, with its source code public on GitHub (github.com/umitkrkmz/qrpeek). The Store version is the same app, installed with one click and updated automatically through the Store. Buying it supports the project.
 ```
 
 **What's new in this version**
 
-> (Left empty on the first submission, as Partner Center asks.)
+> 0.2.0 — New: Receive from phone. Photos and files from a phone or tablet to the PC, with nothing to install on the device and only with your approval. Files come over your local network and are saved to Downloads\QRPeek.
+
+(Left empty in 0.1.0, the first submission, as Partner Center asks.)
 
 **Product features** (up to 20, each ≤ 200 characters)
 
@@ -175,8 +183,8 @@ Open source: QRPeek is an open-source project under GPL-3.0, with its source cod
 7. Join the Wi-Fi network in a QR code with one click; password hidden by default
 8. Show 2FA setup codes safely
 9. Read Turkish e-invoice (e-Fatura / e-Arşiv) codes and export them to Excel (CSV)
-10. Send a copied link or text to your phone as a QR code
-11. Send files and photos to your phone over the local network, no cloud upload
+10. Send copied links, text, files and photos to your phone (local network, no cloud)
+11. Receive files from a phone or tablet: nothing to install, only with your approval
 12. Create QR codes with logos, colors and patterns
 13. Automatic readability check for every code you create
 14. Save as PNG or SVG, copy to the clipboard

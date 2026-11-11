@@ -32,6 +32,7 @@ namespace QRPeek.UI
 
             BuildHotkeyChoices(HotkeyChoices, AppSettings.ScanKey, App.Instance.Hotkey.Id, "Hotkey");
             BuildHotkeyChoices(SendHotkeyChoices, AppSettings.SendKey, App.Instance.SendHotkey.Id, "SendHotkey");
+            BuildHotkeyChoices(ReceiveHotkeyChoices, AppSettings.ReceiveKey, App.Instance.ReceiveHotkey.Id, "ReceiveHotkey");
             RefreshHotkeyErrors();
 
             AutoCopy.IsChecked = s.CopyAutomatically;
@@ -70,7 +71,8 @@ namespace QRPeek.UI
                 {
                     App app = App.Instance;
                     if (group == "Hotkey") app.Settings.Hotkey = p.Id;
-                    else app.Settings.SendHotkey = p.Id;
+                    else if (group == "SendHotkey") app.Settings.SendHotkey = p.Id;
+                    else app.Settings.ReceiveHotkey = p.Id;
                     app.ApplyHotkeys();
                     app.SaveSettings();
                     RefreshHotkeyErrors();
@@ -84,6 +86,7 @@ namespace QRPeek.UI
             App app = App.Instance;
             HotkeyError.Visibility = !app.HotkeyActive && !app.Hotkey.IsNone ? Visibility.Visible : Visibility.Collapsed;
             SendHotkeyError.Visibility = !app.SendHotkeyActive && !app.SendHotkey.IsNone ? Visibility.Visible : Visibility.Collapsed;
+            ReceiveHotkeyError.Visibility = !app.ReceiveHotkeyActive && !app.ReceiveHotkey.IsNone ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void OnWatchChanged(object sender, RoutedEventArgs e)

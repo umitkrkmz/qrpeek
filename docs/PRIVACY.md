@@ -2,7 +2,7 @@
 
 **[🇹🇷 Türkçe](#türkçe) · [🇬🇧 English](#english)**
 
-Son güncelleme / Last updated: 2026-11-10
+Son güncelleme / Last updated: 2026-11-11
 
 ---
 
@@ -40,6 +40,7 @@ QRPeek kendi başına internete çıkmaz. Ağ yalnızca şu durumlarda kullanıl
 - **"Bağlantıyı aç"** (siz bastığınızda): bağlantı varsayılan tarayıcınızda açılır; o sitenin gizlilik politikası geçerlidir.
 - **Sürüm kontrolü** (yalnızca GitHub sürümünde, ayarlardan kapatılabilir): günde en fazla bir kez GitHub'a (`api.github.com`) yeni sürüm olup olmadığı sorulur. İstekte kişisel bilgi yoktur. Microsoft Store sürümü bunu yapmaz; güncellemeleri Store getirir.
 - **Telefona gönder** (yalnızca gönderme penceresi açıkken): dosyalar **yalnızca yerel ağınız üzerinden**, tahmin edilemeyen tek kullanımlık bir adresle paylaşılır. Bu adres en fazla 10 dakika geçerlidir ve internete açılmaz. Kısa metinler ve linkler ağ kullanılmadan doğrudan QR'a dönüştürülür.
+- **Telefondan al** (yalnızca alma penceresi açıkken): telefonunuz ya da tabletiniz dosyaları **yalnızca yerel ağınız üzerinden**, tahmin edilemeyen tek kullanımlık bir adrese gönderir; adres internete açılmaz ve işlem olmazsa 10 dakikada kapanır. Bilgisayar yalnızca sizin onayladığınız dosyaları kaydeder (varsayılan olarak İndirilenler\QRPeek). Cihazın tarayıcı türü ve yerel IP adresi yalnızca pencerede gösterilir, hiçbir yere kaydedilmez.
 - **Wi-Fi'a bağlan** (siz bastığınızda): QR'daki ağın profili Windows'a eklenir ve Windows bu ağa bağlanır.
 
 ### Konum izni (yalnızca Wi-Fi'a bağlanırken)
@@ -94,6 +95,7 @@ QRPeek does not go online on its own. The network is used only in these cases:
 - **"Open link"** (when you press it): the link opens in your default browser; that site's privacy policy applies.
 - **Version check** (GitHub version only, can be turned off in Settings): at most once a day, GitHub (`api.github.com`) is asked whether a newer version exists. The request carries no personal information. The Microsoft Store version doesn't do this; the Store delivers updates.
 - **Send to phone** (only while the send window is open): files are shared **over your local network only**, through an unguessable one-off address that is valid for at most 10 minutes and is not exposed to the internet. Short text and links are turned into a QR directly, with no network at all.
+- **Receive from phone** (only while the receive window is open): your phone or tablet sends files **over your local network only**, to an unguessable one-off address that is not exposed to the internet and closes after 10 idle minutes. The PC saves only the files you approve (by default in Downloads\QRPeek). The device's browser type and local IP address are only shown in the window and never stored.
 - **Connect to Wi-Fi** (when you press it): the network profile from the QR is added to Windows and Windows connects to it.
 
 ### Location permission (only when joining Wi-Fi)
