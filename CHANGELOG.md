@@ -11,7 +11,7 @@ This file lists notable changes to QRPeek, by release.
 
 ## Türkçe
 
-### [Unreleased] — 0.1.0 (ilk sürüm)
+### [0.1.0] — 2026-11-11 (ilk sürüm)
 
 **Ekrandan okuma**
 - Tek kısayolla (`Ctrl + Alt + Q`, değiştirilebilir) tüm monitörleri tarama; ekrandaki birden fazla kodu bir kerede bulma; koyu zemin üzerindeki açık renkli kodlar.
@@ -40,7 +40,7 @@ This file lists notable changes to QRPeek, by release.
 **Uygulama**
 - Bildirim alanında çalışır, tek kopya; ilk açılışta kısayolları anlatan kart.
 - Geçmiş (son 100, yalnızca bu bilgisayarda, kapatılabilir); Wi-Fi şifresi ve 2FA anahtarı yazılmaz. Kopyalanan sırlar Windows pano geçmişine girmez.
-- Windows ile başlat: GitHub sürümünde Run anahtarı, Store sürümünde paket StartupTask'ı (paket içinde henüz denenmedi).
+- Windows ile başlat: GitHub sürümünde Run anahtarı, Store sürümünde paket StartupTask'ı (Windows Ayarlar → Başlangıç ile iki yönlü).
 - GitHub sürümünde günde en fazla bir kez sürüm kontrolü (kapatılabilir); yalnızca bu deponun sürüm sayfası açılır.
 - Türkçe ve İngilizce, Windows'un açık/koyu temasını izler; yaklaşık 1 MB, .NET Framework 4.8.
 
@@ -51,7 +51,7 @@ This file lists notable changes to QRPeek, by release.
 
 ## English
 
-### [Unreleased] — 0.1.0 (first release)
+### [0.1.0] — 2026-11-11 (first release)
 
 **Reading from the screen**
 - Scan all monitors with one shortcut (`Ctrl + Alt + Q`, configurable); several codes at once; light-on-dark codes.
@@ -80,7 +80,7 @@ This file lists notable changes to QRPeek, by release.
 **App**
 - Lives in the notification area, single instance; a first-run card explains the shortcuts.
 - History (last 100, on this PC only, can be turned off); Wi-Fi passwords and 2FA keys are never written. Copied secrets stay out of Windows clipboard history.
-- Start with Windows: the Run key in the GitHub build, the package StartupTask in the Store build (not yet tried inside a package).
+- Start with Windows: the Run key in the GitHub build, the package StartupTask in the Store build (stays in sync with Windows Settings → Startup).
 - GitHub build: version check at most once a day (can be turned off); only this repository's release page is opened.
 - Turkish and English, follows the Windows light/dark theme; about 1 MB, .NET Framework 4.8.
 

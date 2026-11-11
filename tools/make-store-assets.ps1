@@ -2,6 +2,7 @@
 #   shots\<lang>-1..5.png   1920x1080 screenshots (tr, en)
 #   box-1080x1080.png       1:1 box art
 #   poster-720x1080.png     2:3 poster art
+#   tile-300x300.png ...    Store display tiles (300, 150, 71)
 #
 # Input: window captures in build\store-assets\captures\<lang>\
 #   main.png result.png wifi.png invoice.png generator.png send.png
@@ -210,6 +211,14 @@ foreach ($spec in @(@('box-1080x1080.png', 1080, 1080, 520, 300), @('poster-720x
     $sz = $c.G.MeasureString('QRPeek', $f)
     $c.G.DrawString('QRPeek', $f, [System.Drawing.Brushes]::White, [single](($spec[1] - $sz.Width) / 2), [single]($ly + $spec[3] + 30))
     Save $c (Join-Path $assets $spec[0])
+}
+
+# Store display tiles (300/150/71): the logo itself on transparency, drawn at
+# each size (the package only carries 150 px and smaller, which would blur at 300).
+foreach ($size in 300, 150, 71) {
+    $tile = Draw-Icon $size
+    $tile.Save((Join-Path $assets "tile-${size}x${size}.png"), [System.Drawing.Imaging.ImageFormat]::Png)
+    $tile.Dispose()
 }
 
 Get-ChildItem $assets -Recurse -File -Filter *.png | Where-Object { $_.FullName -notmatch '\\captures\\' } |

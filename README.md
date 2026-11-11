@@ -62,7 +62,7 @@ A small Windows tool that reads QR codes **on your screen**, with no camera or p
 ### İndir
 
 - **GitHub (ücretsiz):** **[⬇ QRPeek-portable.zip](https://github.com/umitkrkmz/qrpeek/releases/latest/download/QRPeek-portable.zip)**. Bir klasöre çıkarın, `QRPeek.exe`'yi çalıştırın; kurulum gerekmez. Windows "Windows bilgisayarınızı korudu" derse **Ek bilgi → Yine de çalıştır**'a tıklayın (dosya henüz kod imzalı değil). Buradaki sürüm ücretsizdir ve öyle kalacak.
-- **Microsoft Store (ücretli, yakında):** aynı uygulama; tek tıkla kurulum, SmartScreen uyarısı yok, güncellemeler kendiliğinden gelir. Satın almak projeye destek olur. Özellikler aynıdır.
+- **[Microsoft Store](https://apps.microsoft.com/detail/9NX5T90F6DQK) (ücretli):** aynı uygulama; tek tıkla kurulum, SmartScreen uyarısı yok, güncellemeler kendiliğinden gelir. Satın almak projeye destek olur. Özellikler aynıdır.
 
 ### Güvenli mi?
 
@@ -102,7 +102,7 @@ dotnet test
 ### Download
 
 - **GitHub (free):** **[⬇ QRPeek-portable.zip](https://github.com/umitkrkmz/qrpeek/releases/latest/download/QRPeek-portable.zip)**. Extract it to a folder and run `QRPeek.exe`; nothing to install. If Windows says "Windows protected your PC", click **More info → Run anyway** (the file isn't code-signed yet). The version here is free and will stay free.
-- **Microsoft Store (paid, coming soon):** the same app with a one-click install, no SmartScreen warning, and automatic updates. Buying it supports the project. The features are the same.
+- **[Microsoft Store](https://apps.microsoft.com/detail/9NX5T90F6DQK) (paid):** the same app with a one-click install, no SmartScreen warning, and automatic updates. Buying it supports the project. The features are the same.
 
 ### Is it safe?
 

@@ -36,6 +36,13 @@ the last one. Rules that shaped it (Microsoft Store Policies):
 
 > QRPeek is a desktop (Win32, .NET Framework) app. It registers system-wide hotkeys, captures the screen to decode QR codes, shows a tray icon and overlay windows on every monitor, joins Wi-Fi networks through the native WLAN API, and briefly serves user-chosen files on the local network for its "send to phone" feature. This is not possible in an AppContainer. It installs no drivers or services, never elevates, and runs no code from outside the package.
 
+## Submission options — publishing and notes for certification
+
+- Publishing hold: **"Don't publish this submission until I select Publish now"**, so the Store release, the GitHub `v0.1.0` release and the README Store link go out the same day.
+- Notes for certification (testers only, English):
+
+> No account or sign-in needed. To test: open any web page or image that shows a QR code and press Ctrl+Alt+Q (or click "Scan screen"); a card with the decoded content appears. Ctrl+Alt+W shows the clipboard text as a QR code. "Send to phone" serves files over the local network only, so Windows Firewall may ask for permission. "Connect" on a Wi-Fi card may make Windows ask for location access (Windows 11 24H2 and later). The app keeps running in the notification area after its window is closed; use Settings > Quit QRPeek to exit.
+
 ---
 
 ## Türkçe (tr-tr)
@@ -74,7 +81,7 @@ Açık kaynak: QRPeek GPL-3.0 lisanslı açık kaynak bir projedir ve kaynak kod
 
 **Bu sürümdeki yenilikler**
 
-> Microsoft Store'daki ilk sürüm.
+> (İlk başvuruda boş bırakılır; Partner Center böyle istiyor.)
 
 **Ürün özellikleri** (en fazla 20, her biri ≤ 200 karakter)
 
@@ -155,7 +162,7 @@ Open source: QRPeek is an open-source project under GPL-3.0, with its source cod
 
 **What's new in this version**
 
-> First release in the Microsoft Store.
+> (Left empty on the first submission, as Partner Center asks.)
 
 **Product features** (up to 20, each ≤ 200 characters)
 
@@ -207,6 +214,7 @@ Open source: QRPeek is an open-source project under GPL-3.0, with its source cod
 | Screenshots (per language) | 1920×1080 PNG, 5 each: read a QR on a page + link card, Wi-Fi + e-invoice cards, send to phone + main window, generator with logo, main window + privacy points | done (`build/store-assets/shots/tr-1..5.png`, `en-1..5.png`, not in git) |
 | 1:1 box art (Store logo) | 1080×1080 PNG | done (`build/store-assets/box-1080x1080.png`) |
 | 2:3 poster art | 720×1080 PNG | done (`build/store-assets/poster-720x1080.png`) |
+| Store display tiles | 300×300, 150×150, 71×71 PNG | done (`build/store-assets/tile-*.png`) |
 
 Made by `tools/make-store-assets.ps1` from window captures in `build/store-assets/captures/<lang>/` (main, result, wifi, invoice, generator, send). Windows are placed 1:1, never scaled.
 

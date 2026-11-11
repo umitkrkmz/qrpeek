@@ -81,9 +81,9 @@ jobs:
           body: |
             ## Windows: QRPeek-portable.zip
 
-            **TR:** Aşağıdaki **QRPeek-portable.zip**'i indirin, bir klasöre çıkarın ve `QRPeek.exe`'yi çalıştırın; kurulum gerekmez. Windows "Windows bilgisayarınızı korudu" derse **Ek bilgi → Yine de çalıştır**'a tıklayın (dosya henüz kod imzalı değil). Tek tıkla kurulum ve otomatik güncelleme isteyenler için Microsoft Store sürümü de var.
+            **TR:** Aşağıdaki **QRPeek-portable.zip**'i indirin, bir klasöre çıkarın ve `QRPeek.exe`'yi çalıştırın; kurulum gerekmez. Windows "Windows bilgisayarınızı korudu" derse **Ek bilgi → Yine de çalıştır**'a tıklayın (dosya henüz kod imzalı değil). Tek tıkla kurulum ve otomatik güncelleme isteyenler için [Microsoft Store sürümü](https://apps.microsoft.com/detail/9NX5T90F6DQK) de var.
 
-            **EN:** Download **QRPeek-portable.zip** below, extract it to a folder and run `QRPeek.exe`; nothing to install. If Windows says "Windows protected your PC", click **More info → Run anyway** (the file isn't code-signed yet). A Microsoft Store version with one-click install and automatic updates is also available.
+            **EN:** Download **QRPeek-portable.zip** below, extract it to a folder and run `QRPeek.exe`; nothing to install. If Windows says "Windows protected your PC", click **More info → Run anyway** (the file isn't code-signed yet). A [Microsoft Store version](https://apps.microsoft.com/detail/9NX5T90F6DQK) with one-click install and automatic updates is also available.
 
             **SHA256**
             ```
