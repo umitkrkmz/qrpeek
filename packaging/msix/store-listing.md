@@ -28,8 +28,9 @@ the last one. Rules that shaped it (Microsoft Store Policies):
 
 ## Pricing and availability
 
-- Base price: **$1.99**, all markets.
-- Turkey: **₺60** (market-specific price; Partner Center TRY prices go in steps of ₺5).
+- Base price: **$2.49**, all markets (from 0.3.0; $1.99 in 0.1–0.2). Partner Center only offers fixed tiers ($1.99, $2.49, $2.99…).
+- Turkey: **₺75** (from 0.3.0; ₺60 before; market-specific price; Partner Center TRY prices go in steps of ₺5).
+- A price change only affects new buyers; it can be lowered later or put on sale (Sale pricing).
 - No free trial (enforcing it would need a Store license check in the app). The GitHub build stays free.
 
 ## Submission options — restricted capability (runFullTrust, ≤ 500 characters)

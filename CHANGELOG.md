@@ -11,7 +11,7 @@ This file lists notable changes to QRPeek, by release.
 
 ## Türkçe
 
-### [Unreleased] — 0.3.0
+### [0.3.0] — 2026-11-12
 
 **Yeni**
 - **QR yoksa yazıyı kopyala:** seçilen alanda ya da görselde (sürükle-bırak, `Ctrl + V`, dosya) QR kodu bulunamazsa içindeki yazı Windows'un yerleşik OCR'ıyla okunur ve düzenlenebilir bir kartta gösterilir; "Metni kopyala" ile alınır. Ek indirme yok, internet yok; dil Windows'ta yüklü dillere göre seçilir. Okunan yazı geçmişe yazılmaz, kendiliğinden kopyalanmaz. Aynı satırdaki bilgiler (ör. "Sipariş Toplamı ... USD 1.99") bir arada kalır, sütunlar sekmeyle ayrılır; Excel'e yapıştırınca hücrelere bölünür. Seçimin kenarına yapışık harfler ve ince tek satırlar da okunur. Bağlamdan rakam düzeltme ("II Kasım" → "11 Kasım"). "QR yap" düğmesi metni QR oluşturucuda açar. Ekran yazısı okunmadan önce en az 2 kat büyütülür (küçük gri tablo başlıkları, "$20.00" gibi tutarlar); başka bir OCR dili kazansa da isimlerdeki Türkçe harfler (ü, ş, ğ, İ…) korunur. Görüntü 3 kat büyüklükte de okunur ve yalnızca boş kalan yerler doldurulur (ör. soluk "Qty" başlığı). Windows OCR'ın tanımadığı ₺ ("b179,99" → "₺179,99"), sipariş numaralarındaki O/0, renkli ikonların harf sanılması ve bir okumanın bozup diğerinin doğru okuduğu altı çizili e-posta linkleri ile tutarlar düzeltildi; e-postalarda bilinen sağlayıcının (gmail.com…) adresi tercih edilir, "Arnount" gibi rn/m karışmaları başlıklarda düzelir. Tablodaki "20%" "2096" (ya da küçük yazıda "207/2") okunursa, aynı oran metnin başka yerinde doğru okunduysa ya da hücre "Vergi/Tax" sütunundaysa "20%" olarak düzelir; yıl ya da model numarası gibi sayılara dokunulmaz. Kartta kırmızı "Kontrol edin" uyarısı.
@@ -86,7 +86,7 @@ This file lists notable changes to QRPeek, by release.
 
 ## English
 
-### [Unreleased] — 0.3.0
+### [0.3.0] — 2026-11-12
 
 **New**
 - **No QR? Copy the text:** if the selected area or image (drag and drop, `Ctrl + V`, file) has no QR code, its text is read with the OCR built into Windows and shown in an editable card; "Copy text" takes it. Nothing to download, no internet; the language follows those installed in Windows. The text isn't written to history or copied on its own. Items on the same row (e.g. "Order total ... USD 1.99") stay together, with columns separated by tabs, so it pastes into Excel as cells. Letters touching the edge of the selection and thin single lines are read too. Digits fixed from context ("II Kasım" → "11 Kasım"). "Make QR" opens the text in the QR generator. Screen text is enlarged at least 2x before reading (small gray table headers, amounts like "$20.00"); when another OCR language wins, Turkish letters in names (ü, ş, ğ, İ…) are kept. The image is also read at 3x, filling only the gaps (e.g. a faint "Qty" header). Fixed: ₺, which Windows OCR doesn't know ("b179,99" → "₺179,99"), O/0 in order numbers, colored icons read as letters, and underlined e-mail links or amounts that one reading breaks while another reads them right; a known mail provider's address (gmail.com…) is preferred, and rn/m mix-ups such as "Arnount" are fixed in labels. A table's "20%" read as "2096" (or "207/2" in small type) is fixed when the same rate is read right elsewhere in the text or the cell is under a "Tax" column; numbers such as years or model numbers are left alone. A red "Check it" warning on the card.
