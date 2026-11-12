@@ -55,7 +55,7 @@ QRPeek keeps waiting in the notification area after you close its window. Right-
 
 ## Cards: what a code means
 
-<img src="images/result-en.png" alt="Link card with warnings" width="320" align="right">
+<img src="images/result-en.png" alt="Link card with warnings" width="320">
 
 - **Link:** nothing opens on its own. The site it goes to is shown in bold first, with warnings for plain http, bare IP addresses, URL shorteners, domains imitating a familiar site with non-Latin letters, and the `@` trick. **Show real destination** follows the redirects of a `bit.ly`-style link one by one, without opening a browser. If a site blocks the automatic check (e.g. Cloudflare), it says so plainly and shows how far it could follow.
 - **Wi-Fi:** join in one click; QRPeek waits until the connection is really up. The password stays hidden until you ask, and copying it keeps it out of clipboard history. Windows may ask for location access while joining ([why?](PRIVACY.md#english)).
@@ -64,8 +64,6 @@ QRPeek keeps waiting in the notification area after you close its window. Right-
 - **Others:** email, phone, SMS, contact card (saved as .vcf), location. QRPeek's own [receipt summary QR](#receipt-card) opens as a receipt card again.
 
 A QR code can only ever open `http(s)`, `mailto`, `tel` and `sms` links; it can never run anything like `file:` or `javascript:`.
-
-<br clear="right">
 
 ## No QR? Text recognition (OCR)
 
@@ -80,7 +78,7 @@ If the area or image you pick has no QR code, its text is read **on this PC with
 
 ## Receipt card
 
-<img src="images/receipt-en.png" alt="Receipt card" width="320" align="right">
+<img src="images/receipt-en.png" alt="Receipt card" width="320">
 
 When the text is a receipt or invoice (e.g. an online subscription invoice), QRPeek picks out its fields and shows two tabs: **Receipt** and **Full text**.
 
@@ -93,8 +91,6 @@ When the text is a receipt or invoice (e.g. an online subscription invoice), QRP
 **Summary QR** turns the fields you picked into a plain-text QR code that any phone camera can read. Its first line says "QRPeek receipt summary" and its last "(Not an official document.)"; it has no e-invoice field names and nothing that could pass as an official document. When QRPeek reads such a QR (even one made on another PC, in the other language), it opens it as a receipt card again. A hand-made "summary" goes through the same rules: product keys are dropped, card numbers masked.
 
 Values come from text recognition, so they're **always editable**; if a field was misread, fix it in its box.
-
-<br clear="right">
 
 ## Receipt terms
 
@@ -115,17 +111,15 @@ For another language or your own labels: **Settings → Text recognition → Rec
 
 ## Send to phone
 
-<img src="images/send-en.png" alt="Send to phone" width="300" align="right">
+<img src="images/send-en.png" alt="Send to phone" width="300">
 
 Press `Ctrl + Alt + W`: the link or text you copied becomes a big QR code; point your phone's camera at it.
 
 Files, photos and long text travel **over your local network only**: QRPeek opens a one-off, unguessable address that's valid for 10 minutes. The phone must be on the same network. Nothing is uploaded to the cloud; the server only serves the files you picked, read-only. Windows Firewall may ask for permission the first time.
 
-<br clear="right">
-
 ## Receive from phone
 
-<img src="images/receive-en.png" alt="Receive from phone: approval on the PC" width="300" align="right">
+<img src="images/receive-en.png" alt="Receive from phone: approval on the PC" width="300">
 
 Get photos and files from a phone or tablet onto the PC with nothing to install on the device:
 
@@ -137,8 +131,6 @@ Get photos and files from a phone or tablet onto the PC with nothing to install 
 - Files are saved to **Downloads\QRPeek** by default (change it in the window). Existing files are never overwritten.
 - Saved files are marked as coming from the internet, and **nothing opens on its own**.
 - It works over the local network only and only while the window is open; it closes on its own when idle.
-
-<br clear="right">
 
 ## QR generator
 

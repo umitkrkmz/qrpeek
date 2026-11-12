@@ -55,7 +55,7 @@ QRPeek pencereyi kapatınca bildirim alanında beklemeye devam eder. Simgeye sa�
 
 ## Kartlar: okunan kod ne anlama geliyor?
 
-<img src="images/result-tr.png" alt="Bağlantı kartı ve uyarılar" width="320" align="right">
+<img src="images/result-tr.png" alt="Bağlantı kartı ve uyarılar" width="320">
 
 - **Bağlantı:** hiçbir şey kendiliğinden açılmaz. Önce gideceği site kalın harflerle gösterilir. Şifresiz (http) bağlantı, IP adresi, kısaltılmış link, Latin dışı harflerle taklit edilen alan adı ve `@` hilesi için uyarı çıkar. **Gerçek hedefi göster**, `bit.ly` gibi linklerin nereye gittiğini tarayıcı açmadan, yönlendirmeleri tek tek izleyerek bulur. Bir site otomatik denetimi engellerse (ör. Cloudflare) bunu açıkça söyler ve nereye kadar izlenebildiğini gösterir.
 - **Wi-Fi:** tek tıkla bağlanın; QRPeek bağlantının gerçekten kurulduğunu bekleyip doğrular. Şifre siz isteyene kadar gizli kalır, kopyalanırsa pano geçmişine girmez. Bağlanırken Windows konum izni isteyebilir ([neden?](PRIVACY.md#türkçe)).
@@ -64,8 +64,6 @@ QRPeek pencereyi kapatınca bildirim alanında beklemeye devam eder. Simgeye sa�
 - **Diğer:** e-posta, telefon, SMS, kişi kartı (.vcf olarak kaydedilir), konum. QRPeek'in kendi [makbuz özeti QR'ı](#makbuz-kartı) yeniden makbuz kartı olarak açılır.
 
 Bir QR kodu yalnızca `http(s)`, `mailto`, `tel` ve `sms` bağlantılarını açabilir; `file:`, `javascript:` gibi bir şeyi asla çalıştıramaz.
-
-<br clear="right">
 
 ## QR yoksa: yazı tanıma (OCR)
 
@@ -80,7 +78,7 @@ Seçtiğiniz alanda ya da görselde QR kodu yoksa içindeki yazı **Windows'un y
 
 ## Makbuz kartı
 
-<img src="images/receipt-tr.png" alt="Makbuz kartı" width="320" align="right">
+<img src="images/receipt-tr.png" alt="Makbuz kartı" width="320">
 
 Okunan yazı bir makbuz ya da faturaysa (ör. yurt dışı bir aboneliğin faturası) QRPeek alanları ayırır ve iki sekme gösterir: **Makbuz** ve **Tam metin**.
 
@@ -93,8 +91,6 @@ Okunan yazı bir makbuz ya da faturaysa (ör. yurt dışı bir aboneliğin fatur
 **Özet QR**, seçtiğiniz alanlardan sade bir metin QR'ı yapar; her telefon kamerası okuyabilir. İlk satırı "QRPeek makbuz özeti", son satırı "(Resmî belge değildir.)" der; e-Fatura alan adları ya da resmî bir belgeye benzeyen hiçbir şey içermez. QRPeek bu QR'ı okuyunca (başka bir bilgisayarda ya da öbür dilde yapılmış olsa da) yeniden makbuz kartı olarak açar. Elle hazırlanmış bir "özet" de aynı kurallardan geçer: ürün anahtarı alınmaz, kart numarası maskelenir.
 
 Değerler yazı tanımadan geldiği için **her zaman düzenlenebilir**; bir alan yanlış okunduysa kutuda düzeltin.
-
-<br clear="right">
 
 ## Fatura sözlüğü
 
@@ -115,17 +111,15 @@ Başka bir dil ya da kendi başlıklarınız için: **Ayarlar → Yazı tanıma 
 
 ## Telefona gönder
 
-<img src="images/send-tr.png" alt="Telefona gönder" width="300" align="right">
+<img src="images/send-tr.png" alt="Telefona gönder" width="300">
 
 `Ctrl + Alt + W`'ye basın: kopyaladığınız link ya da metin anında büyük bir QR olur, telefonun kamerasıyla okutursunuz.
 
 Dosya, fotoğraf ve uzun metinler **yalnızca yerel ağınız üzerinden** gider: QRPeek tek kullanımlık, tahmin edilemeyen ve 10 dakika geçerli bir adres açar. Telefon aynı ağda olmalıdır. Buluta hiçbir şey yüklenmez; sunucu yalnızca seçilen dosyaları, salt okunur olarak verir. Windows Güvenlik Duvarı ilk seferde izin isteyebilir.
 
-<br clear="right">
-
 ## Telefondan al
 
-<img src="images/receive-tr.png" alt="Telefondan al: bilgisayarda onay" width="300" align="right">
+<img src="images/receive-tr.png" alt="Telefondan al: bilgisayarda onay" width="300">
 
 Telefona ya da tablete uygulama kurmadan fotoğraf ve dosyaları bilgisayara alın:
 
@@ -137,8 +131,6 @@ Telefona ya da tablete uygulama kurmadan fotoğraf ve dosyaları bilgisayara al�
 - Dosyalar varsayılan olarak **İndirilenler\QRPeek** klasörüne kaydedilir (pencereden değiştirilebilir). Var olan bir dosyanın üstüne yazılmaz.
 - Kaydedilen dosyalar "internetten geldi" olarak işaretlenir ve **hiçbiri kendiliğinden açılmaz**.
 - Bağlantı yalnızca yerel ağdadır ve pencere açıkken çalışır; işlem olmazsa kendiliğinden kapanır.
-
-<br clear="right">
 
 ## QR oluşturucu
 
