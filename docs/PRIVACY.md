@@ -2,7 +2,7 @@
 
 **[🇹🇷 Türkçe](#türkçe) · [🇬🇧 English](#english)**
 
-Son güncelleme / Last updated: 2026-11-11
+Son güncelleme / Last updated: 2026-11-12
 
 ---
 
@@ -14,6 +14,7 @@ QRPeek, kendi bilgisayarınızda çalışan; ekrandaki QR kodlarını okuyan ve 
 
 - **Hesap yok, telemetri yok, reklam yok, analiz yok.** QRPeek'in, geliştiricinin işlettiği bir sunucusu yoktur; uygulama size ait hiçbir veriyi geliştiriciye göndermez.
 - Ekran görüntüleri yalnızca bellekte işlenir; **kaydedilmez, hiçbir yere gönderilmez.**
+- QR kodu bulunamayan bir alandaki yazı, Windows'un kendi yazı tanıma özelliğiyle (OCR) yalnızca bu bilgisayarda okunur. Okunan yazı geçmişe kaydedilmez ve siz "Metni kopyala"ya basmadıkça panoya kopyalanmaz. Makbuz kartındaki alanlar da yalnızca bu bilgisayarda işlenir; CSV yalnızca sizin seçtiğiniz yere kaydedilir. Hangi alanları işaretlediğiniz (değerleri değil) ayarlarda hatırlanır. "Özet QR" yalnızca işaretlediğiniz alanları içerir; ürün anahtarı ve kart numarası hiçbir zaman girmez. Böyle bir özet QR'ı okunduğunda, geçmiş açıksa diğer QR kodları gibi geçmişe yazılır.
 - Tüm veriler **sizin cihazınızda** kalır.
 
 ### Ekran ve pano
@@ -27,6 +28,7 @@ QRPeek, kendi bilgisayarınızda çalışan; ekrandaki QR kodlarını okuyan ve 
 Uygulama yalnızca çalışması için gerekenleri `%LOCALAPPDATA%\QRPeek` klasöründe saklar:
 
 - **Ayarlar** (`settings.json`): kısayollar, dil, seçenekler.
+- **Fatura sözlüğü** (`terms.txt`, yalnızca kendi terim eklediyseniz): Ayarlar → Yazı tanıma → Fatura sözlüğü'ne yazdığınız başlıklar. "AI için komutu kopyala" yalnızca panoya bir metin kopyalar; QRPeek hiçbir AI'a ya da sunucuya bağlanmaz.
 - **Geçmiş** (`history.json`, ayarlardan kapatılabilir): okunan son 100 kodun metni. **2FA kodları hiç yazılmaz, Wi-Fi kodları şifresiz yazılır.** Geçmişi kapattığınızda dosya silinir.
 - **Hata günlüğü** (`error.log`): yalnızca bir hata olursa, teknik ayrıntılarla.
 
@@ -69,6 +71,7 @@ QRPeek is a Windows app that runs on your own computer; it reads QR codes on you
 
 - **No account, no telemetry, no ads, no analytics.** QRPeek has no server run by the developer; the app sends none of your data to the developer.
 - Screen captures are processed in memory only; **they are never saved or sent anywhere.**
+- Text in an area without a QR code is read with the OCR built into Windows, on this PC only. The text is not saved to history and not copied to the clipboard unless you press "Copy text". The receipt card is processed on this PC only too; a CSV is saved only where you choose. Which fields you tick (not their values) is remembered in the settings. A "Summary QR" holds only the fields you ticked; product keys and card numbers never get into it. When such a summary QR is read, it goes into the history like any other QR code (if history is on).
 - All data stays **on your device**.
 
 ### Screen and clipboard
@@ -82,6 +85,7 @@ QRPeek is a Windows app that runs on your own computer; it reads QR codes on you
 The app stores only what it needs to work, in `%LOCALAPPDATA%\QRPeek`:
 
 - **Settings** (`settings.json`): shortcuts, language, options.
+- **Receipt terms** (`terms.txt`, only if you added your own): the labels you entered under Settings → Text recognition → Receipt terms. "Copy prompt for an AI" only copies a text to the clipboard; QRPeek doesn't connect to any AI or server.
 - **History** (`history.json`, can be turned off in Settings): the text of the last 100 codes read. **2FA codes are never written; Wi-Fi codes are written without the password.** Turning history off deletes the file.
 - **Error log** (`error.log`): only if something goes wrong, with technical details.
 
