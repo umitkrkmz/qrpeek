@@ -96,6 +96,11 @@ namespace QRPeek.Tests
         [InlineData("Office 365 Il", "Office 365 Il")]
         [InlineData("SKU A1B2", "SKU A1B2")]
         [InlineData("toplamın 5'ı", "toplamın 5'ı")]
+        [InlineData("Total S24.oo", "Total $24.00")]
+        [InlineData("VAT S4.00", "VAT $4.00")]
+        [InlineData("Paid S1,234.5O", "Paid $1,234.50")]
+        [InlineData("Model S2000", "Model S2000")] // no cents: could be anything
+        [InlineData("SKU S-100", "SKU S-100")]
         public void Fixes_letters_read_in_place_of_digits(string ocr, string expected)
         {
             var words = new List<OcrWord>();
@@ -106,6 +111,22 @@ namespace QRPeek.Tests
                 x += t.Length * 8 + 5;
             }
             Assert.Equal(expected, OcrLayout.Rows(words));
+        }
+
+        [Fact]
+        public void Keeps_native_letters_from_the_other_language_but_not_in_labels()
+        {
+            // The English reading won (more labels); the Turkish one got the names right.
+            var english = new[] { W("Bill", 400, 10, 24), W("to", 428, 10, 14), W("omit", 400, 30, 30),
+                                  W("SiNCAN/ANKARA", 400, 50, 100), W("Registration", 10, 70, 80), W("Anthropic,", 10, 90, 70) };
+            var turkish = new[] { W("Bill", 400, 10, 24), W("to", 428, 10, 14), W("ümit", 401, 30, 30),
+                                  W("SİNCAN/ANKARA", 400, 51, 100), W("Regiştra", 10, 70, 66), W("Anthropİc,", 10, 90, 70) };
+            string merged = OcrLayout.Rows(OcrLayout.KeepNativeLetters(english, turkish, ReceiptTerms.Default.IsLabelWord));
+            Assert.Contains("ümit", merged);
+            Assert.Contains("SİNCAN/ANKARA", merged);
+            Assert.Contains("Registration", merged);   // a label: the English reading stays
+            Assert.Contains("Anthropic,", merged);     // "İ" inside a lower-case word is a misread, not Turkish
+            Assert.DoesNotContain("omit", merged);
         }
 
         [Fact]
@@ -200,6 +221,40 @@ namespace QRPeek.Tests
                 {
                     Assert.Contains("Microsoft", await OcrReader.ReadAsync(crop));
                 }
+            }
+        }
+
+        /// <summary>
+        /// An English invoice on a PC whose OCR language is Turkish (the
+        /// user's setup): the Turkish engine read "Regiştra", "Invoİce n um ber".
+        /// Trying every installed language and keeping the reading with the
+        /// most known labels fixes it. Needs both an English and another OCR language.
+        /// </summary>
+        [Fact]
+        public async Task Picks_the_OCR_language_that_reads_the_receipt_best()
+        {
+            if (!OcrReader.Available) return;
+            using (var bmp = new Bitmap(520, 150))
+            {
+                using (Graphics g = Graphics.FromImage(bmp))
+                using (var bold = new Font("Segoe UI Semibold", 13, FontStyle.Regular, GraphicsUnit.Pixel))
+                using (var font = new Font("Segoe UI", 13, FontStyle.Regular, GraphicsUnit.Pixel))
+                {
+                    g.Clear(Color.White);
+                    g.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
+                    string[,] rows = { { "Invoice number", "PWZP1PZQ-0006" }, { "Date of issue", "October 26, 2026" },
+                                       { "VAT Registration", "Turkey VAT: 701236788" }, { "Amount paid", "$24.00" } };
+                    for (int r = 0; r < 4; r++)
+                    {
+                        g.DrawString(rows[r, 0], bold, Brushes.Black, 12, 12 + r * 32);
+                        g.DrawString(rows[r, 1], font, Brushes.Black, 150, 12 + r * 32);
+                    }
+                }
+                string text = await OcrReader.ReadAsync(bmp);
+                Assert.Contains("Invoice number", text);
+                Assert.Contains("VAT Registration", text);
+                Assert.Contains("Amount paid", text);
+                Assert.DoesNotContain("İ", text);
             }
         }
 

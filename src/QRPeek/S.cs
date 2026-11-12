@@ -57,6 +57,7 @@ namespace QRPeek
                                           "Read on this PC with the text recognition built into Windows; it can get letters wrong, so you can fix them before copying. Not saved to history.");
         public static string CopyText => T("Metni kopyala", "Copy text");
         public static string CopyForExcel => T("Excel için kopyala", "Copy for Excel");
+        public static string MakeQr => T("QR yap", "Make QR");
         public static string CopyForExcelHint => T("Sütunlar sekmeyle ayrılır; Excel'e yapıştırınca hücrelere bölünür.", "Columns are separated by tabs, so they paste into Excel as cells.");
         public static string NothingFoundHint => T("Kod çok küçük, çok yoğun ya da kısmen kapalı olabilir. Sayfayı yakınlaştırıp (Ctrl + fare tekerleği) ya da kodun etrafını seçerek tekrar deneyin.",
                                                    "The code may be too small, too dense or partly covered. Zoom in on the page (Ctrl + mouse wheel) or select the area around the code and try again.");

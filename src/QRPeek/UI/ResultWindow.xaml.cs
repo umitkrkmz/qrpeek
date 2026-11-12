@@ -184,6 +184,10 @@ namespace QRPeek.UI
                 excel.Click += (s, e) => CopyWithFeedback(excel, Regex.Replace(box.Text, " {3,}", "\t"), sensitive: false);
                 actions.Children.Add(excel);
             }
+            // The text as it is now in the box (fixes included) goes to the generator, which says if it's too long for a QR.
+            Button qr = ActionButton("", S.MakeQr, primary: false);
+            qr.Click += (s, e) => App.Instance.ShowGenerator(box.Text.Trim());
+            actions.Children.Add(qr);
             stack.Children.Add(actions);
 
             return new Border { Style = (Style)FindResource("Card"), Margin = new Thickness(0, 0, 0, 10), Child = stack };

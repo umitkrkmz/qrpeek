@@ -29,6 +29,9 @@ namespace QRPeek.Core
         /// <summary>Text this small reads badly; smaller crops are enlarged first.</summary>
         private const int MinShortSide = 600;
 
+        /// <summary>Upper bound for the enlarged image (about 24 MP, ~100 MB as 32-bit pixels).</summary>
+        private const double MaxPixels = 24_000_000;
+
         /// <summary>True when Windows has at least one OCR language.</summary>
         public static bool Available
         {
@@ -39,41 +42,78 @@ namespace QRPeek.Core
             }
         }
 
+        /// <summary>Most OCR languages tried on one image (each pass takes a few hundred ms).</summary>
+        private const int MaxLanguages = 3;
+
         /// <summary>
         /// The text in <paramref name="image"/>: one line per visual row,
         /// columns separated by a tab (so it pastes into Excel as cells);
         /// empty when there is none; null when Windows has no OCR language.
+        ///
+        /// Every installed OCR language reads the image (the user's own first)
+        /// and the reading that finds the most known receipt labels wins: the
+        /// Turkish engine turns an English invoice's "Registration" into
+        /// "Regiştra", the English one gets it right. With no labels at all
+        /// (a plain paragraph) the user's language is kept.
         /// </summary>
-        public static async Task<string> ReadAsync(Bitmap image)
+        public static async Task<string> ReadAsync(Bitmap image, ReceiptTerms terms = null)
         {
-            OcrEngine engine = CreateEngine();
-            if (engine == null) return null;
+            terms = terms ?? ReceiptTerms.Default;
+            List<OcrEngine> engines = CreateEngines();
+            if (engines.Count == 0) return null;
 
             using (Bitmap prepared = Prepare(image, (int)OcrEngine.MaxImageDimension))
             using (SoftwareBitmap sb = await ToSoftwareBitmap(prepared).ConfigureAwait(false))
             {
-                OcrResult result = await engine.RecognizeAsync(sb).AsTask().ConfigureAwait(false);
-                var words = result.Lines.SelectMany(l => l.Words)
-                    .Select(w => new OcrWord(w.Text, new RectangleF((float)w.BoundingRect.X, (float)w.BoundingRect.Y,
-                                                                    (float)w.BoundingRect.Width, (float)w.BoundingRect.Height)));
-                return OcrLayout.Rows(words);
+                var readings = new List<List<OcrWord>>();
+                List<OcrWord> best = null;
+                int bestScore = -1;
+                foreach (OcrEngine engine in engines)
+                {
+                    OcrResult result = await engine.RecognizeAsync(sb).AsTask().ConfigureAwait(false);
+                    List<OcrWord> words = result.Lines.SelectMany(l => l.Words)
+                        .Select(w => new OcrWord(w.Text, new RectangleF((float)w.BoundingRect.X, (float)w.BoundingRect.Y,
+                                                                        (float)w.BoundingRect.Width, (float)w.BoundingRect.Height)))
+                        .ToList();
+                    readings.Add(words);
+                    int score = terms.Score(terms.Polish(OcrLayout.Rows(words)));
+                    if (score > bestScore)
+                    {
+                        best = words;
+                        bestScore = score;
+                    }
+                }
+
+                // The winner may still have mangled names in the other language ("ümit" → "omit").
+                foreach (List<OcrWord> other in readings)
+                {
+                    if (!ReferenceEquals(other, best)) best = OcrLayout.KeepNativeLetters(best, other, terms.IsLabelWord);
+                }
+                return terms.Polish(OcrLayout.Rows(best));
             }
         }
 
-        private static OcrEngine CreateEngine()
+        /// <summary>The user's own OCR language first (keeps ç, ğ, ı, ş…), then the other installed ones.</summary>
+        private static List<OcrEngine> CreateEngines()
         {
+            var engines = new List<OcrEngine>();
             try
             {
-                // The user's own languages first (e.g. Turkish keeps ç, ğ, ı, ş…); else any installed one.
-                OcrEngine engine = OcrEngine.TryCreateFromUserProfileLanguages();
-                if (engine != null) return engine;
-                var lang = OcrEngine.AvailableRecognizerLanguages.FirstOrDefault();
-                return lang == null ? null : OcrEngine.TryCreateFromLanguage(lang);
+                OcrEngine own = OcrEngine.TryCreateFromUserProfileLanguages();
+                if (own != null) engines.Add(own);
+                foreach (var lang in OcrEngine.AvailableRecognizerLanguages)
+                {
+                    if (engines.Count >= MaxLanguages) break;
+                    if (engines.Any(e => string.Equals(e.RecognizerLanguage.LanguageTag, lang.LanguageTag, StringComparison.OrdinalIgnoreCase))) continue;
+                    OcrEngine e2 = OcrEngine.TryCreateFromLanguage(lang);
+                    if (e2 != null) engines.Add(e2);
+                }
             }
             catch (Exception ex) when (ex is TypeLoadException || ex is InvalidCastException || ex is COMException)
             {
-                return null;
+                // Keep whatever was created before the failure.
             }
+            return engines;
         }
 
         /// <summary>
@@ -86,9 +126,14 @@ namespace QRPeek.Core
         /// </summary>
         internal static Bitmap Prepare(Bitmap src, int maxDimension)
         {
-            double scale = 1.0;
+            // Screen text is small whatever the size of the selection (a whole receipt
+            // still has 10 px gray table headers), so always enlarge at least 2x;
+            // thin crops up to 3x. Capped so a full 4K screen stays within limits.
+            double scale = 2.0;
             int shortSide = Math.Min(src.Width, src.Height);
-            if (shortSide < MinShortSide) scale = Math.Min(3.0, (double)MinShortSide / Math.Max(1, shortSide));
+            if (shortSide < MinShortSide) scale = Math.Max(scale, Math.Min(3.0, (double)MinShortSide / Math.Max(1, shortSide)));
+            double pixels = (double)src.Width * src.Height;
+            if (pixels * scale * scale > MaxPixels) scale = Math.Max(1.0, Math.Sqrt(MaxPixels / pixels));
 
             int w = Math.Max(1, (int)Math.Round(src.Width * scale));
             int h = Math.Max(1, (int)Math.Round(src.Height * scale));
