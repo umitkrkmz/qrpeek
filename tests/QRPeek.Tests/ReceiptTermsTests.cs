@@ -64,6 +64,35 @@ namespace QRPeek.Tests
         }
 
         [Fact]
+        public void Takes_an_AIs_answer_as_pasted()
+        {
+            // AIs wrap the list in a code block and put dashes or numbers in front,
+            // even when told not to. The list itself is still good.
+            string text = "```text\n- [total] Gesamtbetrag, Summe\n* [tax] MwSt.\n• [qty] Menge\n1. [date] Datum\n2) [number] Rechnungsnummer\n```";
+            Assert.Empty(ReceiptTerms.Check(text, out int count));
+            Assert.Equal(6, count);
+            var t = new ReceiptTerms("");
+            t.Add(text.Replace("\n", "\r\n"));
+            Assert.Equal(new[] { "Gesamtbetrag", "Summe" }, t.TermsOf("total"));
+            Assert.Equal(new[] { "MwSt." }, t.TermsOf("tax"));
+            Assert.Equal(new[] { "Datum" }, t.TermsOf("date"));
+            Assert.Equal(new[] { "Rechnungsnummer" }, t.TermsOf("number"));
+        }
+
+        [Fact]
+        public void The_AI_prompt_explains_secret_and_asks_for_plain_text()
+        {
+            foreach (string lang in new[] { "tr", "en" })
+            {
+                S.Init(lang);
+                string p = S.TermsAiPromptText(string.Join(", ", ReceiptTerms.KnownFields));
+                Assert.Contains("[secret] ", p);              // an example, so "secret" isn't read as "confidential"
+                foreach (string f in ReceiptTerms.KnownFields) Assert.Contains(f, p);
+            }
+            S.Init("en");
+        }
+
+        [Fact]
         public void Checks_a_users_list_line_by_line()
         {
             S.Init("en");

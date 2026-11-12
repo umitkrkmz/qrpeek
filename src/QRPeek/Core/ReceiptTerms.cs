@@ -109,8 +109,8 @@ namespace QRPeek.Core
             string[] lines = (text ?? "").Replace("\r\n", "\n").Split('\n');
             for (int i = 0; i < lines.Length; i++)
             {
-                string line = lines[i].Trim();
-                if (line.Length == 0 || line[0] == '#') continue;
+                string line = Clean(lines[i]);
+                if (line.Length == 0) continue;
                 Match m = Regex.Match(line, @"^\[([^\]]+)\]\s*(.*)$");
                 if (!m.Success)
                 {
@@ -124,6 +124,18 @@ namespace QRPeek.Core
                 terms += n;
             }
             return problems;
+        }
+
+        /// <summary>
+        /// One line of a term list as it may be pasted from an AI: a code-block
+        /// fence ("```text") or a note ("# …") becomes empty, a leading list mark
+        /// ("- ", "* ", "• ", "1. ", "2) ") goes away. AIs add these even when told not to.
+        /// </summary>
+        private static string Clean(string raw)
+        {
+            string line = (raw ?? "").Trim();
+            if (line.StartsWith("```") || line.StartsWith("#")) return "";
+            return Regex.Replace(line, @"^(?:[-*•]|\d{1,3}[.)])\s+(?=\[)", "");
         }
 
         public IEnumerable<string> Fields => _terms.Select(t => t.Field).Distinct();
@@ -174,8 +186,8 @@ namespace QRPeek.Core
         {
             foreach (string raw in (text ?? "").Split('\n'))
             {
-                string line = raw.Trim();
-                if (line.Length == 0 || line[0] == '#') continue;
+                string line = Clean(raw);
+                if (line.Length == 0) continue;
                 Match m = Regex.Match(line, @"^\[([^\]]+)\]\s*(.*)$");
                 if (!m.Success) continue;
                 string field = m.Groups[1].Value.Trim().ToLowerInvariant();
