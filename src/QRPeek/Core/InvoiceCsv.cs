@@ -27,14 +27,7 @@ namespace QRPeek.Core
             string sep = culture.TextInfo.ListSeparator;
             if (string.IsNullOrEmpty(sep) || sep == culture.NumberFormat.NumberDecimalSeparator) sep = ";";
 
-            string Cell(string s)
-            {
-                s = s ?? "";
-                bool quote = s.Contains(sep) || s.Contains("\"") || s.Contains("\n") || s.Contains("\r");
-                // Leading = + - @ would make Excel run a formula from QR content.
-                if (s.Length > 0 && "=+-@".IndexOf(s[0]) >= 0) s = "'" + s;
-                return quote ? "\"" + s.Replace("\"", "\"\"") + "\"" : s;
-            }
+            string Cell(string s) => CsvCell(s, sep);
 
             string Num(decimal? d) => d.HasValue ? d.Value.ToString("0.00", culture) : "";
 
@@ -53,6 +46,23 @@ namespace QRPeek.Core
                 }));
             }
             return sb.ToString();
+        }
+
+        /// <summary>The list separator Excel expects for <paramref name="culture"/> (";" in Turkey).</summary>
+        internal static string Separator(CultureInfo culture)
+        {
+            string sep = culture.TextInfo.ListSeparator;
+            return string.IsNullOrEmpty(sep) || sep == culture.NumberFormat.NumberDecimalSeparator ? ";" : sep;
+        }
+
+        /// <summary>One CSV cell, quoted when needed and never starting a formula.</summary>
+        internal static string CsvCell(string s, string sep)
+        {
+            s = s ?? "";
+            bool quote = s.Contains(sep) || s.Contains("\"") || s.Contains("\n") || s.Contains("\r");
+            // Leading = + - @ would make Excel run a formula from QR or OCR content.
+            if (s.Length > 0 && "=+-@".IndexOf(s[0]) >= 0) s = "'" + s;
+            return quote ? "\"" + s.Replace("\"", "\"\"") + "\"" : s;
         }
     }
 }

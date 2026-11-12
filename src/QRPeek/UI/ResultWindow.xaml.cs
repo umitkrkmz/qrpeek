@@ -36,7 +36,10 @@ namespace QRPeek.UI
 
             if (texts.Count == 0 && !string.IsNullOrWhiteSpace(ocrText))
             {
-                Heading.Text = S.NoQrButText;
+                // A receipt or invoice: its fields first, the full text below.
+                Receipt receipt = ReceiptParser.Parse(ocrText, ReceiptTerms.Current);
+                Heading.Text = receipt != null ? S.ReceiptFound : S.NoQrButText;
+                if (receipt != null) Items.Children.Add(ReceiptCard(receipt));
                 Items.Children.Add(TextCard(ocrText));
             }
             else if (texts.Count == 0)
@@ -137,6 +140,89 @@ namespace QRPeek.UI
                 ShowResolved(r, resolvePanel, actions);
             };
             actions.Children.Add(resolve);
+        }
+
+        /// <summary>
+        /// The fields of a receipt read by OCR: tick what goes into the copy,
+        /// the CSV and the summary QR; fix values in place. Personal fields
+        /// (buyer, e-mail, payment) start unticked; product keys and card
+        /// numbers are masked and can't be ticked. The user's ticks are
+        /// remembered for the next receipt.
+        /// </summary>
+        private UIElement ReceiptCard(Receipt r)
+        {
+            AppSettings settings = App.Instance.Settings;
+            foreach (ReceiptField f in r.Fields.Where(f => !f.Secret))
+            {
+                if (settings.ReceiptOff.Contains(f.Field)) f.Selected = false;
+                else if (settings.ReceiptOn.Contains(f.Field)) f.Selected = true;
+            }
+
+            var stack = new StackPanel();
+            var kind = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 6) };
+            kind.Children.Add(new TextBlock { Text = "", Style = (Style)FindResource("Icon"), FontSize = 14, Foreground = (Brush)FindResource("Accent"), Margin = new Thickness(0, 0, 8, 0) });
+            kind.Children.Add(new TextBlock { Text = S.ReceiptTitle, FontWeight = FontWeights.SemiBold, FontSize = 13 });
+            stack.Children.Add(kind);
+            stack.Children.Add(new TextBlock { Text = S.ReceiptCheck, Style = (Style)FindResource("Muted"), Foreground = (Brush)FindResource("Warn"), Margin = new Thickness(0, 0, 0, 8) });
+
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(104) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition());
+            int row = 0;
+            foreach (ReceiptField f in r.Fields)
+            {
+                grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                var cb = new CheckBox { IsChecked = f.Selected, IsEnabled = !f.Secret, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 4, 4) };
+                cb.Click += (s, e) =>
+                {
+                    f.Selected = cb.IsChecked == true;
+                    settings.ReceiptOn.Remove(f.Field);
+                    settings.ReceiptOff.Remove(f.Field);
+                    bool byDefault = !f.Personal;
+                    if (f.Selected != byDefault) (f.Selected ? settings.ReceiptOn : settings.ReceiptOff).Add(f.Field);
+                    App.Instance.SaveSettings();
+                };
+                var label = new TextBlock { VerticalAlignment = VerticalAlignment.Center, FontSize = 12.5, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 8, 4) };
+                label.Inlines.Add(new Run(S.ReceiptField(f.Field)));
+                if (f.Personal || f.Secret)
+                    label.Inlines.Add(new Run(Environment.NewLine + (f.Secret ? S.NotSelectable : S.Personal)) { Foreground = (Brush)FindResource("FgMuted"), FontSize = 11 });
+                var value = new TextBox { Text = f.Display, IsReadOnly = f.Secret, FontSize = 13, Padding = new Thickness(5, 2, 5, 2), Margin = new Thickness(0, 0, 0, 4), TextWrapping = TextWrapping.Wrap };
+                if (!f.Secret) value.TextChanged += (s, e) => f.Value = value.Text;
+                Grid.SetRow(cb, row); Grid.SetColumn(cb, 0);
+                Grid.SetRow(label, row); Grid.SetColumn(label, 1);
+                Grid.SetRow(value, row); Grid.SetColumn(value, 2);
+                grid.Children.Add(cb);
+                grid.Children.Add(label);
+                grid.Children.Add(value);
+                row++;
+            }
+            stack.Children.Add(grid);
+
+            var actions = new WrapPanel { Margin = new Thickness(0, 8, 0, 0) };
+            Button copy = ActionButton("", S.CopySummary, primary: true);
+            copy.Click += (s, e) => CopyWithFeedback(copy, ReceiptExport.Summary(r), sensitive: false);
+            actions.Children.Add(copy);
+            Button excel = ActionButton("", S.CopyForExcel, primary: false);
+            excel.Click += (s, e) => CopyWithFeedback(excel, ReceiptExport.Tabbed(r), sensitive: false);
+            actions.Children.Add(excel);
+            Button csv = ActionButton("", S.SaveCsv, primary: false);
+            csv.Click += (s, e) => SaveReceiptCsv(r);
+            actions.Children.Add(csv);
+            Button qr = ActionButton("", S.SummaryQr, primary: false);
+            qr.Click += (s, e) => App.Instance.ShowGenerator(ReceiptExport.Summary(r));
+            actions.Children.Add(qr);
+            stack.Children.Add(actions);
+
+            return new Border { Style = (Style)FindResource("Card"), Margin = new Thickness(0, 0, 0, 10), Child = stack };
+        }
+
+        private void SaveReceiptCsv(Receipt r)
+        {
+            var dlg = new SaveFileDialog { Filter = S.CsvFilter, FileName = S.ReceiptFileName + "-" + DateTime.Now.ToString("yyyyMMdd-HHmm") + ".csv" };
+            if (dlg.ShowDialog(this) != true) return;
+            try { File.WriteAllText(dlg.FileName, ReceiptExport.Csv(r, CultureInfo.CurrentCulture), new UTF8Encoding(true)); }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException) { Storage.LogError(ex); }
         }
 
         /// <summary>How a column gap shows in the text card (the copy for Excel turns it back into a tab).</summary>

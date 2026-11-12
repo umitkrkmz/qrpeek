@@ -60,6 +60,43 @@ namespace QRPeek
         public static string CopyForExcel => T("Excel için kopyala", "Copy for Excel");
         public static string MakeQr => T("QR yap", "Make QR");
 
+        // Receipt card
+        public static string ReceiptTitle => T("Makbuz", "Receipt");
+        public static string ReceiptFound => T("QR kodu yok, makbuz okundu", "No QR code, a receipt was read");
+        public static string ReceiptCheck => T("Yazı tanımayla okundu; değerleri kontrol edin, gerekirse düzeltin. Yalnızca işaretli alanlar kopyalanır, CSV'ye ve QR'a girer.",
+                                               "Read with text recognition: check the values and fix them if needed. Only ticked fields are copied, saved to CSV or put in the QR.");
+        public static string Personal => T("kişisel", "personal");
+        public static string NotSelectable => T("seçilemez", "can't be picked");
+        public static string SummaryQr => T("Özet QR", "Summary QR");
+        public static string CopySummary => T("Özeti kopyala", "Copy summary");
+        public static string ReceiptSummaryTitle => T("QRPeek makbuz özeti", "QRPeek receipt summary");
+        public static string NotOfficial => T("(Resmî belge değildir.)", "(Not an official document.)");
+        public static string ReceiptFileName => T("makbuz", "receipt");
+        public static string ReceiptField(string field)
+        {
+            switch (field)
+            {
+                case "seller": return T("Satıcı", "Seller");
+                case "document": return T("Belge", "Document");
+                case "number": return T("Belge no", "Number");
+                case "date": return T("Tarih", "Date");
+                case "period": return T("Dönem", "Period");
+                case "item": return T("Kalem", "Item");
+                case "qty": return T("Miktar", "Quantity");
+                case "unitprice": return T("Birim fiyat", "Unit price");
+                case "amount": return T("Tutar", "Amount");
+                case "subtotal": return T("Ara toplam", "Subtotal");
+                case "tax": return T("KDV / vergi", "Tax");
+                case "total": return T("Toplam", "Total");
+                case "currency": return T("Para birimi", "Currency");
+                case "buyer": return T("Alıcı", "Buyer");
+                case "payment": return T("Ödeme", "Payment");
+                case "taxid": return T("Vergi no", "Tax ID");
+                case "secret": return T("Ürün anahtarı", "Product key");
+                default: return field;
+            }
+        }
+
         // Receipt terms (Settings)
         public static string Save => T("Kaydet", "Save");
         public static string Cancel => T("İptal", "Cancel");

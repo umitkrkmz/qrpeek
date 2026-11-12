@@ -48,6 +48,7 @@ namespace QRPeek.Core
 [total]     Total, Amount paid, Amount due, Grand total, Order total, Total paid, Toplam, Genel toplam, Sipariş toplamı, Ödenecek, Ödenecek tutar, Ödenen tutar, Vergiler dahil
 [payment]   Payment method, Paid with, Payment history, Ödeme şekli, Ödeme yöntemi, Kart
 [period]    Billing period, Period, Dönem, Fatura dönemi
+[secret]    Product key, License key, Activation code, Ürün anahtarı, Lisans anahtarı, Etkinleştirme kodu
 ";
 
         /// <summary>Labels shorter than this are only matched exactly (a typo fix on "Tax" could turn any 3-letter word into it).</summary>
@@ -130,6 +131,38 @@ namespace QRPeek.Core
         public int Count => _terms.Count;
 
         public IEnumerable<string> TermsOf(string field) => _terms.Where(t => t.Field == field).Select(t => t.Text);
+
+        /// <summary>
+        /// The longest term <paramref name="cell"/> starts with, as a whole
+        /// phrase ("Total excluding tax: $20" → subtotal, not total). Returns
+        /// false when the cell doesn't start with a known label.
+        /// </summary>
+        public bool StartsWithTerm(string cell, out string field, out int length)
+        {
+            field = null;
+            length = 0;
+            string c = (cell ?? "").TrimStart();
+            foreach (Term t in _terms)
+            {
+                if (t.Text.Length <= length || c.Length < t.Text.Length) continue;
+                if (!c.StartsWith(t.Text, StringComparison.CurrentCultureIgnoreCase)) continue;
+                if (c.Length > t.Text.Length && char.IsLetterOrDigit(c[t.Text.Length])) continue; // "Totally" is not "Total"
+                field = t.Field;
+                length = t.Text.Length + (cell.Length - c.Length);
+            }
+            return field != null;
+        }
+
+        /// <summary>True if <paramref name="text"/> has a term of <paramref name="field"/> as a whole word anywhere ("… KDV dahil").</summary>
+        public bool Mentions(string text, string field)
+        {
+            foreach (Term t in _terms.Where(x => x.Field == field))
+            {
+                if (Regex.IsMatch(text, @"(?<![\p{L}\p{N}])" + Regex.Escape(t.Text) + @"(?![\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+                    return true;
+            }
+            return false;
+        }
 
         /// <summary>True for a word that appears in a label ("Registration", "Toplam"); short words count only if they are a whole term ("VAT", "KDV").</summary>
         public bool IsLabelWord(string word) =>

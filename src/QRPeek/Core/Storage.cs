@@ -27,6 +27,9 @@ namespace QRPeek.Core
         [DataMember] public string ReceiveFolder { get; set; }
         /// <summary>The Settings section open last time (shortcuts, general, language, ocr, about).</summary>
         [DataMember] public string SettingsPage { get; set; }
+        /// <summary>Receipt card fields the user ticked / unticked against the default (remembered for the next receipt).</summary>
+        [DataMember] public List<string> ReceiptOn { get; set; }
+        [DataMember] public List<string> ReceiptOff { get; set; }
         [DataMember] public bool CopyAutomatically { get; set; }
         [DataMember] public bool KeepHistory { get; set; }
         [DataMember] public bool WatchScreen { get; set; }
@@ -53,6 +56,8 @@ namespace QRPeek.Core
             ReceiveHotkey = "none";
             ReceiveFolder = "";
             SettingsPage = "shortcuts";
+            ReceiptOn = new List<string>();
+            ReceiptOff = new List<string>();
             CopyAutomatically = true;
             KeepHistory = true;
             WatchScreen = false;

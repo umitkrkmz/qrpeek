@@ -14,7 +14,7 @@ QRPeek, kendi bilgisayarınızda çalışan; ekrandaki QR kodlarını okuyan ve 
 
 - **Hesap yok, telemetri yok, reklam yok, analiz yok.** QRPeek'in, geliştiricinin işlettiği bir sunucusu yoktur; uygulama size ait hiçbir veriyi geliştiriciye göndermez.
 - Ekran görüntüleri yalnızca bellekte işlenir; **kaydedilmez, hiçbir yere gönderilmez.**
-- QR kodu bulunamayan bir alandaki yazı, Windows'un kendi yazı tanıma özelliğiyle (OCR) yalnızca bu bilgisayarda okunur. Okunan yazı geçmişe kaydedilmez ve siz "Metni kopyala"ya basmadıkça panoya kopyalanmaz.
+- QR kodu bulunamayan bir alandaki yazı, Windows'un kendi yazı tanıma özelliğiyle (OCR) yalnızca bu bilgisayarda okunur. Okunan yazı geçmişe kaydedilmez ve siz "Metni kopyala"ya basmadıkça panoya kopyalanmaz. Makbuz kartındaki alanlar da yalnızca bu bilgisayarda işlenir; CSV yalnızca sizin seçtiğiniz yere kaydedilir. Hangi alanları işaretlediğiniz (değerleri değil) ayarlarda hatırlanır.
 - Tüm veriler **sizin cihazınızda** kalır.
 
 ### Ekran ve pano
@@ -71,7 +71,7 @@ QRPeek is a Windows app that runs on your own computer; it reads QR codes on you
 
 - **No account, no telemetry, no ads, no analytics.** QRPeek has no server run by the developer; the app sends none of your data to the developer.
 - Screen captures are processed in memory only; **they are never saved or sent anywhere.**
-- Text in an area without a QR code is read with the OCR built into Windows, on this PC only. The text is not saved to history and not copied to the clipboard unless you press "Copy text".
+- Text in an area without a QR code is read with the OCR built into Windows, on this PC only. The text is not saved to history and not copied to the clipboard unless you press "Copy text". The receipt card is processed on this PC only too; a CSV is saved only where you choose. Which fields you tick (not their values) is remembered in the settings.
 - All data stays **on your device**.
 
 ### Screen and clipboard
