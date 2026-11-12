@@ -51,6 +51,101 @@ namespace QRPeek
 
         // Results
         public static string NothingFound => T("QR kodu bulunamadı", "No QR code found");
+        public static string NoQrButText => T("QR kodu yok, yazı okundu", "No QR code, but text was found");
+        public static string OcrKind => T("Yazı", "Text");
+        public static string OcrCheckLead => T("Kontrol edin:", "Check it:");
+        public static string OcrCheck => T("yazı tanıma bazı harf ve rakamları yanlış okuyabilir (ör. 1 ile I, 0 ile O). Kopyalamadan önce düzeltin.", "text recognition can misread some letters and digits (e.g. 1 and I, 0 and O). Fix them before copying.");
+        public static string OcrNote => T("Windows'un kendi yazı tanıma özelliğiyle bu bilgisayarda okundu. Geçmişe kaydedilmez.", "Read on this PC with the text recognition built into Windows. Not saved to history.");
+        public static string CopyText => T("Metni kopyala", "Copy text");
+        public static string CopyForExcel => T("Excel için kopyala", "Copy for Excel");
+        public static string MakeQr => T("QR yap", "Make QR");
+
+        // Receipt card
+        public static string ReceiptTitle => T("Makbuz", "Receipt");
+        public static string ReceiptFound => T("QR kodu yok, makbuz okundu", "No QR code, a receipt was read");
+        public static string FullText => T("Tam metin", "Full text");
+        public static string ReceiptCheck => T("Yazı tanımayla okundu; değerleri kontrol edin, gerekirse düzeltin. Yalnızca işaretli alanlar kopyalanır, CSV'ye ve QR'a girer.",
+                                               "Read with text recognition: check the values and fix them if needed. Only ticked fields are copied, saved to CSV or put in the QR.");
+        public static string ReceiptFromQr => T("Bir QRPeek makbuz özetinden okundu; resmî belge değildir. Yalnızca işaretli alanlar kopyalanır, CSV'ye ve QR'a girer.",
+                                                "Read from a QRPeek receipt summary; not an official document. Only ticked fields are copied, saved to CSV or put in the QR.");
+        public static string KindReceipt => T("Makbuz özeti", "Receipt summary");
+        public static string Personal => T("kişisel", "personal");
+        public static string NotSelectable => T("seçilemez", "can't be picked");
+        public static string SummaryQr => T("Özet QR", "Summary QR");
+        public static string CopySummary => T("Özeti kopyala", "Copy summary");
+        public static string ReceiptSummaryTitle => SummaryTitle(_tr);
+        internal static string SummaryTitle(bool turkish) => turkish ? "QRPeek makbuz özeti" : "QRPeek receipt summary";
+        public static string NotOfficial => NotOfficialIn(_tr);
+        internal static string NotOfficialIn(bool turkish) => turkish ? "(Resmî belge değildir.)" : "(Not an official document.)";
+        public static string ReceiptFileName => T("makbuz", "receipt");
+        public static string ReceiptField(string field) => ReceiptField(field, _tr);
+
+        /// <summary>A field's name in Turkish or English, whatever the app's language (to read a summary made on another PC).</summary>
+        internal static string ReceiptField(string field, bool turkish)
+        {
+            string L(string tr, string en) => turkish ? tr : en;
+            switch (field)
+            {
+                case "seller": return L("Satıcı", "Seller");
+                case "document": return L("Belge", "Document");
+                case "number": return L("Belge no", "Number");
+                case "date": return L("Tarih", "Date");
+                case "period": return L("Dönem", "Period");
+                case "item": return L("Kalem", "Item");
+                case "qty": return L("Miktar", "Quantity");
+                case "unitprice": return L("Birim fiyat", "Unit price");
+                case "amount": return L("Tutar", "Amount");
+                case "subtotal": return L("Ara toplam", "Subtotal");
+                case "tax": return L("KDV / vergi", "Tax");
+                case "total": return L("Toplam", "Total");
+                case "currency": return L("Para birimi", "Currency");
+                case "buyer": return L("Alıcı", "Buyer");
+                case "payment": return L("Ödeme", "Payment");
+                case "taxid": return L("Vergi no", "Tax ID");
+                case "secret": return L("Ürün anahtarı", "Product key");
+                default: return field;
+            }
+        }
+
+        // Receipt terms (Settings)
+        public static string Save => T("Kaydet", "Save");
+        public static string Cancel => T("İptal", "Cancel");
+        public static string TermsTitle => T("Fatura sözlüğü", "Receipt terms");
+        public static string NavShortcuts => T("Kısayollar", "Shortcuts");
+        public static string NavGeneral => T("Genel", "General");
+        public static string NavOcr => T("Yazı tanıma", "Text recognition");
+        public static string OcrSettingsHint => T("Seçtiğiniz alanda ya da görselde QR kodu yoksa içindeki yazı, Windows'un yerleşik yazı tanıma özelliğiyle bu bilgisayarda okunur. Okunan yazı geçmişe kaydedilmez.", "If the area or image you pick has no QR code, its text is read on this PC with the text recognition built into Windows. The text is not saved to history.");
+        public static string TermsSettingsHint => T("Yazı tanıma, faturalardaki başlıkları (Toplam, KDV, Invoice number…) bu sözlükle tanır. Türkçe ve İngilizce yerleşik; başka diller ya da kendi başlıklarınız için ekleyebilirsiniz.",
+                                                    "Text recognition knows invoice labels (Total, VAT, Invoice number…) from this list. Turkish and English are built in; add other languages or your own labels.");
+        public static string TermsEdit => T("Düzenle…", "Edit…");
+        public static string TermsSummary(int builtIn, int user) => string.Format(T("Yerleşik: {0} terim · Sizin: {1} terim", "Built in: {0} terms · Yours: {1} terms"), builtIn, user);
+        public static string TermsIntro => T("Yazı tanıma bu terimlerle doğru dili seçer, bölünen sözcükleri birleştirir ve başlıklardaki harf hatalarını düzeltir (ör. \"Ammount paid\" → \"Amount paid\"). İsim, adres, numara gibi değerlere hiç dokunmaz. Türkçe ve İngilizce yerleşik gelir; başka diller ya da kendi başlıklarınız için buraya ekleyin.",
+                                             "Text recognition uses these terms to pick the right language, join split words and fix typos in labels (e.g. \"Ammount paid\" → \"Amount paid\"). It never touches values such as names, addresses or numbers. Turkish and English are built in; add other languages or your own labels here.");
+        public static string TermsFormat => T("Her satır bir alan: [alan] terim, terim, …   Örnek: [total] Gesamtbetrag, Summe   ·   # ile başlayan satırlar nottur.",
+                                              "One field per line: [field] term, term, …   Example: [total] Gesamtbetrag, Summe   ·   Lines starting with # are notes.");
+        public static string TermsFieldList(string fields) => T("Alanlar: ", "Fields: ") + fields;
+        public static string TermsYours => T("Sizin terimleriniz", "Your terms");
+        public static string TermsTemplate => T("# Kendi terimleriniz. Örnek:\n# [total] Gesamtbetrag, Summe\n# [tax] MwSt", "# Your own terms. Example:\n# [total] Gesamtbetrag, Summe\n# [tax] MwSt").Replace("\n", System.Environment.NewLine);
+        public static string TermsShowBuiltIn => T("▸ Yerleşik terimleri göster", "▸ Show built-in terms");
+        public static string TermsHideBuiltIn => T("▾ Yerleşik terimleri gizle", "▾ Hide built-in terms");
+        public static string TermsImport => T("İçe aktar…", "Import…");
+        public static string TermsExport => T("Dışa aktar…", "Export…");
+        public static string TermsAiPrompt => T("AI için komutu kopyala", "Copy prompt for an AI");
+        public static string TermsAiHint => T("Başka bir dil için: komutu kendi kullandığınız bir AI'a yapıştırın, dili yazın, çıkan listeyi buraya ekleyin. QRPeek'in kendisi hiçbir yere bağlanmaz.",
+                                              "For another language: paste the prompt into an AI you use, name the language, and add the list it gives you here. QRPeek itself doesn't connect anywhere.");
+        public static string TermsAiPromptText(string fields) => string.Format(T(
+            "Aşağıdaki biçimde, [DİL] dilindeki fatura ve makbuzlarda gerçekten kullanılan başlıkları listele.\nHer satır bir alan olsun: [alan] terim, terim, terim\nYalnızca şu alanları kullan: {0}\n[secret], ürün anahtarı ya da lisans anahtarı gibi gizli tutulması gereken kodların başlıklarıdır.\nAçıklama, kod bloğu ya da madde işareti ekleme; yalnızca düz metin olarak listeyi yaz. Emin olmadığın alanı atla.\nÖrnek (İngilizce):\n[total] Total, Amount paid, Amount due\n[tax] VAT, Tax\n[secret] Product key, License key, Activation code",
+            "List the labels really used on invoices and receipts in [LANGUAGE], in this format.\nOne field per line: [field] term, term, term\nUse only these fields: {0}\n[secret] is for labels of codes that must be kept private, such as a product key or license key.\nNo explanations, code blocks or bullet points; only the list, as plain text. Skip a field you're not sure about.\nExample (English):\n[total] Total, Amount paid, Amount due\n[tax] VAT, Tax\n[secret] Product key, License key, Activation code"), fields).Replace("\n", System.Environment.NewLine);
+        public static string TermsCount(int n) => string.Format(T("{0} terim", "{0} terms"), n);
+        public static string TermsProblems(int n) => string.Format(T("{0} sorun", "{0} problems"), n);
+        public static string TermsLine(int line, string message) => string.Format(T("{0}. satır: {1}", "Line {0}: {1}"), line, message);
+        public static string TermsBadLine => T("“[alan] terim, terim” biçiminde değil; yok sayılır.", "not in the “[field] term, term” format; it's skipped.");
+        public static string TermsUnknownField(string field) => string.Format(T("“[{0}]” bilinmeyen bir alan (yazım hatası mı?).", "“[{0}]” is not a known field (a typo?)."), field);
+        public static string TermsEmptyLine => T("alanın yanında terim yok.", "no terms next to the field.");
+        public static string TermsTooBig => T("Dosya çok büyük; bir terim listesi en fazla 256 KB olabilir.", "The file is too big; a term list can be at most 256 KB.");
+        public static string TermsReadFailed => T("Dosya okunamadı.", "Couldn't read the file.");
+        public static string TextFilter => T("Metin dosyası (*.txt)|*.txt", "Text file (*.txt)|*.txt");
+        public static string CopyForExcelHint => T("Sütunlar sekmeyle ayrılır; Excel'e yapıştırınca hücrelere bölünür.", "Columns are separated by tabs, so they paste into Excel as cells.");
         public static string NothingFoundHint => T("Kod çok küçük, çok yoğun ya da kısmen kapalı olabilir. Sayfayı yakınlaştırıp (Ctrl + fare tekerleği) ya da kodun etrafını seçerek tekrar deneyin.",
                                                    "The code may be too small, too dense or partly covered. Zoom in on the page (Ctrl + mouse wheel) or select the area around the code and try again.");
         internal static string OnScreen(QRPeek.Core.ScreenPlace p)
@@ -268,6 +363,9 @@ namespace QRPeek
         public static string Resolving => T("Yönlendirmeler izleniyor…", "Following redirects…");
         public static string ResolveNote => T("Bağlantının sunucusuna tek bir istek gönderilir; sayfa açılmaz.", "Sends a request to the link's server; the page itself is not opened.");
         public static string RealTarget => T("Gerçek hedef", "Real destination");
+        public static string ReachedSoFar => T("Şuraya kadar izlenebildi", "Followed as far as");
+        public static string ResolveRefused(int code) => string.Format(T("Bu site otomatik denetimi engelledi (HTTP {0}), bu yüzden gerçek hedef doğrulanamadı. Bağlantıyı açarsanız tarayıcınız başka bir siteye yönlendirilebilir.",
+                                                                         "This site blocked the automatic check (HTTP {0}), so the real destination couldn't be verified. If you open the link, your browser may be sent to another site."), code);
         public static string RedirectPath => T("Yönlendirme yolu", "Redirect path");
         public static string NoRedirect => T("Yönlendirme yok: bağlantı doğrudan bu siteye gidiyor.", "No redirects: the link goes straight to this site.");
         public static string OpenRealTarget => T("Gerçek hedefi aç", "Open real destination");

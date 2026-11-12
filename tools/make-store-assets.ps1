@@ -1,5 +1,5 @@
 ﻿# QRPeek - Microsoft Store images, written to build\store-assets (git-ignored):
-#   shots\<lang>-1..6.png   1920x1080 screenshots (tr, en)
+#   shots\<lang>-1..7.png   1920x1080 screenshots (tr, en)
 #   box-1080x1080.png       1:1 box art
 #   poster-720x1080.png     2:3 poster art
 #   tile-300x300.png ...    Store display tiles (300, 150, 71)
@@ -7,6 +7,8 @@
 # Input: window captures in build\store-assets\captures\<lang>\
 #   main.png result.png wifi.png invoice.png generator.png send.png
 #   receive-qr.png receive-offer.png (0.2: waiting for a device, then the approval card)
+#   receipt.png (0.3: the receipt card), and captures\receipt-page.png: the made-up
+#   receipt image it was read from (no language, drawn with demo data)
 # taken from QRPeek with demo data only (no personal data, no other brands).
 # The windows are placed 1:1 (never scaled) so their text stays sharp.
 #
@@ -142,6 +144,7 @@ function Draw-Badge($g, [string]$text, [int]$cx, [int]$cy) {
 $text = @{
     tr = @(
         @('Ekrandaki QR kodunu tek kısayolla okuyun', 'Kamera ya da telefon gerekmez · Bağlantının gerçek hedefi ve uyarılar'),
+        @("QR'ı olmayan makbuzları da okuyun", "Windows'un kendi yazı tanımasıyla, bu bilgisayarda · Seçtiğiniz alanlar CSV'ye ya da özet QR'a"),
         @('Telefondan bilgisayara dosya alın', 'Telefona uygulama kurmadan · Siz onaylamadan hiçbir şey alınmaz'),
         @('Wi-Fi ve e-Fatura kodları anlaşılır kartlarda', "Tek tıkla Wi-Fi'a bağlanın · Faturayı Excel'e aktarın"),
         @('Linkleri ve dosyaları telefonunuza gönderin', 'Ctrl + Alt + W · Yerel ağ üzerinden, buluta yükleme yok'),
@@ -150,6 +153,7 @@ $text = @{
     )
     en = @(
         @('Read any QR code on your screen with one shortcut', 'No camera or phone needed · See where a link really goes'),
+        @('Read receipts that have no QR code', "With Windows' own text recognition, on this PC · Pick fields for a CSV or a summary QR"),
         @('Get files from your phone onto the PC', 'Nothing to install on the phone · Nothing arrives until you approve'),
         @('Wi-Fi and e-invoice codes as clear cards', 'Join Wi-Fi in one click · Export invoices to Excel'),
         @('Send links and files to your phone', 'Ctrl + Alt + W · Over your local network, nothing uploaded'),
@@ -172,34 +176,41 @@ foreach ($lang in 'tr', 'en') {
     Draw-Badge $c.G 'Ctrl + Alt + Q' 1025 650
     Save $c (Join-Path $shots "$lang-1.png")
 
-    # 2) receive from phone: the QR, then the approval card (new in 0.2)
+    # 2) a receipt with no QR code: the image, then the receipt card (new in 0.3)
     $c = New-Canvas 1920 1080; Draw-Caption $c.G $t[1][0] $t[1][1]
-    $a = Open $lang 'receive-qr'; $b = Open $lang 'receive-offer'
-    Draw-Shadowed $c.G $a (960 - $a.Width - 40) (Mid $a.Height); Draw-Shadowed $c.G $b (960 + 40) (Mid $b.Height)
+    $a = [System.Drawing.Image]::FromFile((Join-Path $captures 'receipt-page.png')); $b = Open $lang 'receipt'
+    Draw-Shadowed $c.G $a (960 - $a.Width - 40 + 160) (Mid $a.Height); Draw-Shadowed $c.G $b (960 + 40 + 160) (Mid $b.Height)
     $a.Dispose(); $b.Dispose()
     Save $c (Join-Path $shots "$lang-2.png")
 
-    # 3) Wi-Fi + e-invoice cards
+    # 3) receive from phone: the QR, then the approval card (new in 0.2)
     $c = New-Canvas 1920 1080; Draw-Caption $c.G $t[2][0] $t[2][1]
-    $a = Open $lang 'wifi'; $b = Open $lang 'invoice'
+    $a = Open $lang 'receive-qr'; $b = Open $lang 'receive-offer'
     Draw-Shadowed $c.G $a (960 - $a.Width - 40) (Mid $a.Height); Draw-Shadowed $c.G $b (960 + 40) (Mid $b.Height)
     $a.Dispose(); $b.Dispose()
     Save $c (Join-Path $shots "$lang-3.png")
 
-    # 4) send to phone + main window
+    # 4) Wi-Fi + e-invoice cards
     $c = New-Canvas 1920 1080; Draw-Caption $c.G $t[3][0] $t[3][1]
-    $a = Open $lang 'main'; $b = Open $lang 'send'
+    $a = Open $lang 'wifi'; $b = Open $lang 'invoice'
     Draw-Shadowed $c.G $a (960 - $a.Width - 40) (Mid $a.Height); Draw-Shadowed $c.G $b (960 + 40) (Mid $b.Height)
     $a.Dispose(); $b.Dispose()
     Save $c (Join-Path $shots "$lang-4.png")
 
-    # 5) generator
+    # 5) send to phone + main window
     $c = New-Canvas 1920 1080; Draw-Caption $c.G $t[4][0] $t[4][1]
-    $a = Open $lang 'generator'; Draw-Shadowed $c.G $a ([int]((1920 - $a.Width) / 2)) (Mid $a.Height); $a.Dispose()
+    $a = Open $lang 'main'; $b = Open $lang 'send'
+    Draw-Shadowed $c.G $a (960 - $a.Width - 40) (Mid $a.Height); Draw-Shadowed $c.G $b (960 + 40) (Mid $b.Height)
+    $a.Dispose(); $b.Dispose()
     Save $c (Join-Path $shots "$lang-5.png")
 
-    # 6) main window + privacy points
+    # 6) generator
     $c = New-Canvas 1920 1080; Draw-Caption $c.G $t[5][0] $t[5][1]
+    $a = Open $lang 'generator'; Draw-Shadowed $c.G $a ([int]((1920 - $a.Width) / 2)) (Mid $a.Height); $a.Dispose()
+    Save $c (Join-Path $shots "$lang-6.png")
+
+    # 7) main window + privacy points
+    $c = New-Canvas 1920 1080; Draw-Caption $c.G $t[6][0] $t[6][1]
     $a = Open $lang 'main'; Draw-Shadowed $c.G $a 330 (Mid $a.Height); $a.Dispose()
     $f = New-Object System.Drawing.Font 'Segoe UI', 32, ([System.Drawing.FontStyle]::Regular), ([System.Drawing.GraphicsUnit]::Pixel)
     $y = 650 - 2 * 90 + 20
@@ -208,7 +219,7 @@ foreach ($lang in 'tr', 'en') {
         $c.G.DrawString($line, $f, [System.Drawing.Brushes]::White, 955, $y)
         $y += 90
     }
-    Save $c (Join-Path $shots "$lang-6.png")
+    Save $c (Join-Path $shots "$lang-7.png")
 }
 
 # Box art (1:1) and poster (2:3): logo + name, no language-specific text.

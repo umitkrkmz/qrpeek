@@ -24,6 +24,8 @@ namespace QRPeek.Core
         Otp,
         /// <summary>Turkish GİB e-Fatura / e-Arşiv invoice QR (JSON).</summary>
         Invoice,
+        /// <summary>QRPeek's own receipt summary ("Summary QR" on the receipt card), read back into a card.</summary>
+        Receipt,
     }
 
     internal sealed class WifiInfo
@@ -98,6 +100,8 @@ namespace QRPeek.Core
 
         public InvoiceInfo Invoice { get; private set; }
 
+        public Receipt Receipt { get; private set; }
+
         /// <summary>Holds a secret (2FA key, Wi-Fi password): no auto-copy, no clipboard history.</summary>
         public bool IsSensitive => Kind == ContentKind.Otp || (Kind == ContentKind.Wifi && !Wifi.IsOpen);
 
@@ -153,6 +157,16 @@ namespace QRPeek.Core
                 if (wifi != null)
                 {
                     return new QrContent(raw, ContentKind.Wifi) { Wifi = wifi, Summary = wifi.Ssid };
+                }
+            }
+
+            if (lower.StartsWith("qrpeek "))
+            {
+                Receipt receipt = ReceiptExport.ReadSummary(text);
+                if (receipt != null)
+                {
+                    string who = string.Join(" · ", new[] { receipt["seller"]?.Value, receipt["total"]?.Value }.Where(s => !string.IsNullOrEmpty(s)));
+                    return new QrContent(raw, ContentKind.Receipt) { Receipt = receipt, Summary = who };
                 }
             }
 

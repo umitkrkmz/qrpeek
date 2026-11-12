@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -318,6 +319,10 @@ namespace QRPeek.Tests
                         string[] parts = first.Split(' ');
                         string method = parts[0], path = parts.Length > 1 ? parts[1] : "/";
                         string resp =
+                            // A shortener behind a bot check (seen with shorturl.at on Cloudflare): 403 to everything.
+                            path == "/short" ? "HTTP/1.1 403 Forbidden\r\ncf-mitigated: challenge\r\nContent-Length: 0\r\n\r\n" :
+                            path == "/hop" ? "HTTP/1.1 301 Moved\r\nLocation: /short\r\nContent-Length: 0\r\n\r\n" :
+                            path == "/gone" ? "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n" :
                             path == "/a" ? "HTTP/1.1 301 Moved\r\nLocation: /b\r\nContent-Length: 0\r\n\r\n" :
                             path == "/b" ? "HTTP/1.1 302 Found\r\nLocation: /c\r\nContent-Length: 0\r\n\r\n" :
                             path == "/c" && method == "HEAD" ? "HTTP/1.1 405 No\r\nContent-Length: 0\r\n\r\n" :
@@ -340,6 +345,32 @@ namespace QRPeek.Tests
                 Assert.Null(r.Error);
                 Assert.Equal(3, r.Chain.Count);
                 Assert.Equal("/c", r.Final.AbsolutePath);
+                cts.Cancel();
+            }
+        }
+
+        [Fact]
+        public async Task A_refused_check_is_never_reported_as_no_redirect()
+        {
+            using (var cts = new CancellationTokenSource())
+            {
+                int port = StartRedirectServer(cts.Token);
+                string root = "http://127.0.0.1:" + port;
+
+                ResolveResult r = await LinkResolver.ResolveAsync(new Uri(root + "/short"));
+                Assert.Equal(403, r.RefusedWith);
+                Assert.Single(r.Chain);
+
+                // Refused after a redirect: the chain so far is kept, the end stays unknown.
+                r = await LinkResolver.ResolveAsync(new Uri(root + "/hop"));
+                Assert.Equal(403, r.RefusedWith);
+                Assert.Equal(new[] { "/hop", "/short" }, r.Chain.Select(u => u.AbsolutePath));
+
+                // A plain redirect chain or a missing page is not a refusal.
+                r = await LinkResolver.ResolveAsync(new Uri(root + "/a"));
+                Assert.Null(r.RefusedWith);
+                r = await LinkResolver.ResolveAsync(new Uri(root + "/gone"));
+                Assert.Null(r.RefusedWith);
                 cts.Cancel();
             }
         }

@@ -3,71 +3,198 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:QRPeek"
         Style="{StaticResource WindowBase}"
-        Title="{x:Static local:S.Settings}" Width="480" SizeToContent="Height"
+        Title="{x:Static local:S.Settings}" Width="720" Height="600"
         ResizeMode="NoResize" WindowStartupLocation="CenterScreen"
         Icon="pack://application:,,,/Assets/QRPeek.ico">
-    <StackPanel Margin="22,20,22,18">
-        <TextBlock Text="{x:Static local:S.SetHotkey}" Style="{StaticResource SectionTitle}" />
-        <WrapPanel x:Name="HotkeyChoices" />
-        <TextBlock x:Name="HotkeyError" Text="{x:Static local:S.HotkeyTaken}" Foreground="{DynamicResource Bad}" FontSize="12.5"
-                   Visibility="Collapsed" Margin="0,0,0,6" />
+    <!--
+      Sections, like Windows Settings: the menu on the left picks one page on
+      the right. A new setting makes only its own page longer; each page
+      scrolls on its own if it ever gets taller than the window.
+    -->
+    <Window.Resources>
+        <Style x:Key="NavItem" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{DynamicResource Fg}" />
+            <Setter Property="FontSize" Value="13.5" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Margin" Value="0,0,0,2" />
+            <!-- A focus ring only when moving with the keyboard (Tab), not after a mouse click. -->
+            <Setter Property="FocusVisualStyle">
+                <Setter.Value>
+                    <Style>
+                        <Setter Property="Control.Template">
+                            <Setter.Value>
+                                <ControlTemplate>
+                                    <Border CornerRadius="6" BorderThickness="1" BorderBrush="{DynamicResource Accent}" />
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd" Background="Transparent" CornerRadius="6" Padding="12,8">
+                            <Grid>
+                                <Border x:Name="Bar" Width="3" CornerRadius="1.5" Background="{DynamicResource Accent}"
+                                        HorizontalAlignment="Left" Margin="-12,3,0,3" Visibility="Collapsed" />
+                                <ContentPresenter VerticalAlignment="Center" />
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SurfaceHover}" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SurfaceHover}" />
+                                <Setter TargetName="Bar" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="PageTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="19" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,14" />
+        </Style>
+    </Window.Resources>
 
-        <TextBlock Text="{x:Static local:S.SetSendHotkey}" Style="{StaticResource SectionTitle}" Margin="0,10,0,6" />
-        <WrapPanel x:Name="SendHotkeyChoices" />
-        <TextBlock x:Name="SendHotkeyError" Text="{x:Static local:S.HotkeyTaken}" Foreground="{DynamicResource Bad}" FontSize="12.5"
-                   Visibility="Collapsed" Margin="0,0,0,6" />
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-        <TextBlock Text="{x:Static local:S.SetReceiveHotkey}" Style="{StaticResource SectionTitle}" Margin="0,10,0,6" />
-        <WrapPanel x:Name="ReceiveHotkeyChoices" />
-        <TextBlock x:Name="ReceiveHotkeyError" Text="{x:Static local:S.HotkeyTaken}" Foreground="{DynamicResource Bad}" FontSize="12.5"
-                   Visibility="Collapsed" Margin="0,0,0,6" />
-
-        <StackPanel Margin="0,14,0,0">
-            <CheckBox x:Name="AutoCopy" Content="{x:Static local:S.SetAutoCopy}" Click="OnOptionChanged" />
-            <CheckBox x:Name="KeepHistory" Content="{x:Static local:S.SetHistory}" Click="OnOptionChanged" />
-            <CheckBox x:Name="Watch" Click="OnWatchChanged">
-                <StackPanel>
-                    <TextBlock Text="{x:Static local:S.SetWatch}" />
-                    <TextBlock Text="{x:Static local:S.SetWatchNote}" Style="{StaticResource Muted}" Margin="0,2,0,0" />
+        <!-- Menu -->
+        <StackPanel Grid.Column="0" Margin="12,16,8,12">
+            <RadioButton x:Name="NavShortcuts" Style="{StaticResource NavItem}" GroupName="Nav" Tag="shortcuts" Click="OnNav">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE765;" Style="{StaticResource Icon}" FontSize="15" Margin="0,0,12,0" />
+                    <TextBlock Text="{x:Static local:S.NavShortcuts}" />
                 </StackPanel>
-            </CheckBox>
-            <CheckBox x:Name="Startup" Content="{x:Static local:S.SetStartup}" Click="OnStartupChanged" />
-            <TextBlock x:Name="StartupNote" Style="{StaticResource Muted}" Visibility="Collapsed" Margin="30,-6,0,10" />
-            <CheckBox x:Name="CheckUpdates" Content="{x:Static local:S.SetCheckUpdates}" Click="OnCheckUpdatesChanged" />
+            </RadioButton>
+            <RadioButton x:Name="NavGeneral" Style="{StaticResource NavItem}" GroupName="Nav" Tag="general" Click="OnNav">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE713;" Style="{StaticResource Icon}" FontSize="15" Margin="0,0,12,0" />
+                    <TextBlock Text="{x:Static local:S.NavGeneral}" />
+                </StackPanel>
+            </RadioButton>
+            <RadioButton x:Name="NavLanguage" Style="{StaticResource NavItem}" GroupName="Nav" Tag="language" Click="OnNav">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE774;" Style="{StaticResource Icon}" FontSize="15" Margin="0,0,12,0" />
+                    <TextBlock Text="{x:Static local:S.SetLanguage}" />
+                </StackPanel>
+            </RadioButton>
+            <RadioButton x:Name="NavOcr" Style="{StaticResource NavItem}" GroupName="Nav" Tag="ocr" Click="OnNav">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE8A5;" Style="{StaticResource Icon}" FontSize="15" Margin="0,0,12,0" />
+                    <TextBlock Text="{x:Static local:S.NavOcr}" />
+                </StackPanel>
+            </RadioButton>
+            <RadioButton x:Name="NavAbout" Style="{StaticResource NavItem}" GroupName="Nav" Tag="about" Click="OnNav">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE946;" Style="{StaticResource Icon}" FontSize="15" Margin="0,0,12,0" />
+                    <TextBlock Text="{x:Static local:S.About}" />
+                </StackPanel>
+            </RadioButton>
         </StackPanel>
 
-        <TextBlock Text="{x:Static local:S.SetLanguage}" Style="{StaticResource SectionTitle}" Margin="0,8,0,6" />
-        <WrapPanel>
-            <RadioButton x:Name="LangAuto" Style="{StaticResource Pill}" GroupName="Lang" Content="{x:Static local:S.LangAuto}" Tag="auto" Click="OnLanguage" />
-            <RadioButton x:Name="LangTr" Style="{StaticResource Pill}" GroupName="Lang" Content="Türkçe" Tag="tr" Click="OnLanguage" />
-            <RadioButton x:Name="LangEn" Style="{StaticResource Pill}" GroupName="Lang" Content="English" Tag="en" Click="OnLanguage" />
-        </WrapPanel>
-        <TextBlock x:Name="LangNote" Text="{x:Static local:S.LangRestart}" Style="{StaticResource Muted}" Visibility="Collapsed" />
+        <Border Grid.Column="1" BorderBrush="{DynamicResource Line}" BorderThickness="1,0,0,0">
+            <ScrollViewer x:Name="PageScroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <Grid Margin="24,18,22,16">
+                    <!-- Shortcuts -->
+                    <StackPanel x:Name="PageShortcuts" Tag="shortcuts">
+                        <TextBlock Text="{x:Static local:S.NavShortcuts}" Style="{StaticResource PageTitle}" />
+                        <TextBlock Text="{x:Static local:S.SetHotkey}" Style="{StaticResource SectionTitle}" />
+                        <WrapPanel x:Name="HotkeyChoices" />
+                        <TextBlock x:Name="HotkeyError" Text="{x:Static local:S.HotkeyTaken}" Foreground="{DynamicResource Bad}" FontSize="12.5"
+                                   Visibility="Collapsed" Margin="0,0,0,6" />
 
-        <Border Style="{StaticResource Card}" Margin="0,18,0,0">
-            <StackPanel>
-                <DockPanel>
-                    <TextBlock x:Name="VersionText" DockPanel.Dock="Right" Style="{StaticResource Muted}" VerticalAlignment="Center" />
-                    <TextBlock Text="{x:Static local:S.About}" FontWeight="SemiBold" />
-                </DockPanel>
-                <TextBlock Text="{x:Static local:S.AboutText}" Style="{StaticResource Muted}" Margin="0,6,0,10" />
-                <WrapPanel>
-                    <Button Content="{x:Static local:S.SourceCode}" Click="OnSource" Margin="0,0,8,8" />
-                    <Button Content="{x:Static local:S.ThirdParty}" Click="OnNotices" Margin="0,0,8,8" />
-                    <Button Content="{x:Static local:S.PrivacyPolicy}" Click="OnPrivacy" Margin="0,0,0,8" />
-                </WrapPanel>
-                <DockPanel x:Name="UpdateRow" Margin="0,10,0,0">
-                    <Button x:Name="CheckNowButton" DockPanel.Dock="Left" Content="{x:Static local:S.CheckUpdatesNow}" Click="OnCheckNow" Margin="0,0,10,0" />
-                    <Button x:Name="UpdateDownload" DockPanel.Dock="Right" Style="{StaticResource Primary}" Content="{x:Static local:S.Download}"
-                            Click="OnUpdateDownload" Visibility="Collapsed" Padding="12,4" Margin="10,0,0,0" />
-                    <TextBlock x:Name="UpdateStatus" Style="{StaticResource Muted}" VerticalAlignment="Center" />
-                </DockPanel>
-            </StackPanel>
+                        <TextBlock Text="{x:Static local:S.SetSendHotkey}" Style="{StaticResource SectionTitle}" Margin="0,10,0,6" />
+                        <WrapPanel x:Name="SendHotkeyChoices" />
+                        <TextBlock x:Name="SendHotkeyError" Text="{x:Static local:S.HotkeyTaken}" Foreground="{DynamicResource Bad}" FontSize="12.5"
+                                   Visibility="Collapsed" Margin="0,0,0,6" />
+
+                        <TextBlock Text="{x:Static local:S.SetReceiveHotkey}" Style="{StaticResource SectionTitle}" Margin="0,10,0,6" />
+                        <WrapPanel x:Name="ReceiveHotkeyChoices" />
+                        <TextBlock x:Name="ReceiveHotkeyError" Text="{x:Static local:S.HotkeyTaken}" Foreground="{DynamicResource Bad}" FontSize="12.5"
+                                   Visibility="Collapsed" Margin="0,0,0,6" />
+                    </StackPanel>
+
+                    <!-- General -->
+                    <StackPanel x:Name="PageGeneral" Tag="general" Visibility="Collapsed">
+                        <TextBlock Text="{x:Static local:S.NavGeneral}" Style="{StaticResource PageTitle}" />
+                        <CheckBox x:Name="AutoCopy" Content="{x:Static local:S.SetAutoCopy}" Click="OnOptionChanged" />
+                        <CheckBox x:Name="KeepHistory" Content="{x:Static local:S.SetHistory}" Click="OnOptionChanged" />
+                        <CheckBox x:Name="Watch" Click="OnWatchChanged">
+                            <StackPanel>
+                                <TextBlock Text="{x:Static local:S.SetWatch}" />
+                                <TextBlock Text="{x:Static local:S.SetWatchNote}" Style="{StaticResource Muted}" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </CheckBox>
+                        <CheckBox x:Name="Startup" Content="{x:Static local:S.SetStartup}" Click="OnStartupChanged" />
+                        <TextBlock x:Name="StartupNote" Style="{StaticResource Muted}" Visibility="Collapsed" Margin="30,-6,0,10" />
+                        <CheckBox x:Name="CheckUpdates" Content="{x:Static local:S.SetCheckUpdates}" Click="OnCheckUpdatesChanged" />
+                    </StackPanel>
+
+                    <!-- Language -->
+                    <StackPanel x:Name="PageLanguage" Tag="language" Visibility="Collapsed">
+                        <TextBlock Text="{x:Static local:S.SetLanguage}" Style="{StaticResource PageTitle}" />
+                        <WrapPanel>
+                            <RadioButton x:Name="LangAuto" Style="{StaticResource Pill}" GroupName="Lang" Content="{x:Static local:S.LangAuto}" Tag="auto" Click="OnLanguage" />
+                            <RadioButton x:Name="LangTr" Style="{StaticResource Pill}" GroupName="Lang" Content="Türkçe" Tag="tr" Click="OnLanguage" />
+                            <RadioButton x:Name="LangEn" Style="{StaticResource Pill}" GroupName="Lang" Content="English" Tag="en" Click="OnLanguage" />
+                        </WrapPanel>
+                        <TextBlock x:Name="LangNote" Text="{x:Static local:S.LangRestart}" Style="{StaticResource Muted}" Visibility="Collapsed" />
+                    </StackPanel>
+
+                    <!-- Text recognition -->
+                    <StackPanel x:Name="PageOcr" Tag="ocr" Visibility="Collapsed">
+                        <TextBlock Text="{x:Static local:S.NavOcr}" Style="{StaticResource PageTitle}" />
+                        <TextBlock Text="{x:Static local:S.OcrSettingsHint}" Style="{StaticResource Muted}" Margin="0,0,0,14" />
+                        <TextBlock Text="{x:Static local:S.TermsTitle}" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
+                        <TextBlock Text="{x:Static local:S.TermsSettingsHint}" Style="{StaticResource Muted}" />
+                        <DockPanel Margin="0,10,0,0">
+                            <Button DockPanel.Dock="Left" Content="{x:Static local:S.TermsEdit}" Click="OnEditTerms" />
+                            <TextBlock x:Name="TermsSummary" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="10,0,0,0" />
+                        </DockPanel>
+                    </StackPanel>
+
+                    <!-- About -->
+                    <StackPanel x:Name="PageAbout" Tag="about" Visibility="Collapsed">
+                        <DockPanel Margin="0,0,0,14">
+                            <TextBlock x:Name="VersionText" DockPanel.Dock="Right" Style="{StaticResource Muted}" VerticalAlignment="Center" />
+                            <TextBlock Text="{x:Static local:S.About}" Style="{StaticResource PageTitle}" Margin="0" />
+                        </DockPanel>
+                        <TextBlock Text="{x:Static local:S.AboutText}" Style="{StaticResource Muted}" FontSize="13" Margin="0,0,0,12" />
+                        <WrapPanel>
+                            <Button Content="{x:Static local:S.SourceCode}" Click="OnSource" Margin="0,0,8,8" />
+                            <Button Content="{x:Static local:S.ThirdParty}" Click="OnNotices" Margin="0,0,8,8" />
+                            <Button Content="{x:Static local:S.PrivacyPolicy}" Click="OnPrivacy" Margin="0,0,0,8" />
+                        </WrapPanel>
+                        <DockPanel x:Name="UpdateRow" Margin="0,10,0,0">
+                            <Button x:Name="CheckNowButton" DockPanel.Dock="Left" Content="{x:Static local:S.CheckUpdatesNow}" Click="OnCheckNow" Margin="0,0,10,0" />
+                            <Button x:Name="UpdateDownload" DockPanel.Dock="Right" Style="{StaticResource Primary}" Content="{x:Static local:S.Download}"
+                                    Click="OnUpdateDownload" Visibility="Collapsed" Padding="12,4" Margin="10,0,0,0" />
+                            <TextBlock x:Name="UpdateStatus" Style="{StaticResource Muted}" VerticalAlignment="Center" />
+                        </DockPanel>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
         </Border>
 
-        <DockPanel Margin="0,16,0,0" LastChildFill="False">
-            <Button DockPanel.Dock="Left" Click="OnQuit" Foreground="{DynamicResource Bad}" Content="{x:Static local:S.Quit}" />
-            <Button DockPanel.Dock="Right" Style="{StaticResource Primary}" Content="{x:Static local:S.Close}" Click="OnClose" IsCancel="True" />
-        </DockPanel>
-    </StackPanel>
+        <!-- Always visible, whatever the page -->
+        <Border Grid.Row="1" Grid.ColumnSpan="2" BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0" Padding="16,12">
+            <DockPanel LastChildFill="False">
+                <Button DockPanel.Dock="Left" Click="OnQuit" Foreground="{DynamicResource Bad}" Content="{x:Static local:S.Quit}" />
+                <Button DockPanel.Dock="Right" Style="{StaticResource Primary}" Content="{x:Static local:S.Close}" Click="OnClose" IsCancel="True" />
+            </DockPanel>
+        </Border>
+    </Grid>
 </Window>

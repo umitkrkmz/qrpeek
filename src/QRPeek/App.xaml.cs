@@ -96,6 +96,7 @@ namespace QRPeek
             AppDomain.CurrentDomain.UnhandledException += (s, a) => Storage.LogError(a.ExceptionObject as Exception);
 
             Settings = Storage.LoadSettings();
+            ReceiptTerms.UseUserTerms(Storage.LoadUserTerms());
             S.Init(Settings.Language);
             WindowTheme.Apply(this, WindowTheme.SystemPrefersDark());
             SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
@@ -246,7 +247,14 @@ namespace QRPeek
             try
             {
                 List<string> texts = await Task.Run(() => QrScanner.Decode(bmp));
-                ShowResults(texts);
+                string ocrText = null;
+                if (texts.Count == 0)
+                {
+                    // No QR code in the selected area / image: offer its text instead (Windows OCR, on this PC).
+                    try { ocrText = await OcrReader.ReadAsync(bmp); }
+                    catch (Exception ex) { Storage.LogError(ex); }
+                }
+                ShowResults(texts, ocrText: ocrText);
             }
             finally
             {
@@ -254,7 +262,7 @@ namespace QRPeek
             }
         }
 
-        internal void ShowResults(List<string> texts, bool fromHistory = false, IReadOnlyDictionary<string, ScreenPlace> places = null)
+        internal void ShowResults(List<string> texts, bool fromHistory = false, IReadOnlyDictionary<string, ScreenPlace> places = null, string ocrText = null)
         {
             bool autoCopied = false;
             // Secrets (2FA keys, Wi-Fi passwords) are never copied on their own:
@@ -266,7 +274,7 @@ namespace QRPeek
 
             RestoreMain();
             if (_results == null || !_results.IsLoaded) _results = new ResultWindow();
-            _results.ShowItems(texts, autoCopied, places);
+            _results.ShowItems(texts, autoCopied, places, ocrText);
 
             _watcher?.MarkSeen(texts);
             if (!fromHistory) AddHistory(texts);

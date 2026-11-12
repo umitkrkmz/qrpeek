@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -27,12 +28,40 @@ namespace QRPeek.UI
         }
 
         /// <param name="places">Which screen each code was on; null when there's only one screen or it wasn't a screen scan.</param>
-        internal void ShowItems(List<string> texts, bool autoCopied, IReadOnlyDictionary<string, ScreenPlace> places = null)
+        /// <param name="ocrText">When no QR code was found: the text OCR read in the same image (null = not tried / no OCR language).</param>
+        internal void ShowItems(List<string> texts, bool autoCopied, IReadOnlyDictionary<string, ScreenPlace> places = null, string ocrText = null)
         {
             Items.Children.Clear();
             CopiedBadge.Visibility = autoCopied ? Visibility.Visible : Visibility.Collapsed;
 
-            if (texts.Count == 0)
+            if (texts.Count == 0 && !string.IsNullOrWhiteSpace(ocrText))
+            {
+                // A receipt or invoice: its fields first, the full text below.
+                Receipt receipt = ReceiptParser.Parse(ocrText, ReceiptTerms.Current);
+                Heading.Text = receipt != null ? S.ReceiptFound : S.NoQrButText;
+                UIElement text = TextCard(ocrText, showTitle: receipt == null);
+                if (receipt == null)
+                {
+                    Items.Children.Add(text);
+                }
+                else
+                {
+                    // Two tabs instead of two long cards one under the other.
+                    UIElement card = ReceiptCard(receipt);
+                    var tabs = new WrapPanel { Margin = new Thickness(0, 0, 0, 10) };
+                    var tabReceipt = new RadioButton { Style = (Style)FindResource("Pill"), GroupName = "OcrTabs", Content = S.ReceiptTitle, IsChecked = true };
+                    var tabText = new RadioButton { Style = (Style)FindResource("Pill"), GroupName = "OcrTabs", Content = S.FullText };
+                    tabReceipt.Checked += (s, e) => { card.Visibility = Visibility.Visible; text.Visibility = Visibility.Collapsed; };
+                    tabText.Checked += (s, e) => { card.Visibility = Visibility.Collapsed; text.Visibility = Visibility.Visible; };
+                    tabs.Children.Add(tabReceipt);
+                    tabs.Children.Add(tabText);
+                    text.Visibility = Visibility.Collapsed;
+                    Items.Children.Add(tabs);
+                    Items.Children.Add(card);
+                    Items.Children.Add(text);
+                }
+            }
+            else if (texts.Count == 0)
             {
                 Heading.Text = S.NothingFound;
                 Items.Children.Add(new TextBlock { Text = S.NothingFoundHint, Style = (Style)FindResource("Muted"), FontSize = 13.5 });
@@ -60,6 +89,9 @@ namespace QRPeek.UI
 
         private UIElement BuildCard(QrContent c, ScreenPlace? where = null)
         {
+            // QRPeek's own summary QR: back into a receipt card (CSV, Excel copy).
+            if (c.Kind == ContentKind.Receipt) return ReceiptCard(c.Receipt, KindLine(c.Kind, where), S.ReceiptFromQr);
+
             var stack = new StackPanel();
             stack.Children.Add(KindLine(c.Kind, where));
             var actions = new WrapPanel { Margin = new Thickness(0, 10, 0, 0) };
@@ -132,24 +164,181 @@ namespace QRPeek.UI
             actions.Children.Add(resolve);
         }
 
+        /// <summary>
+        /// The fields of a receipt read by OCR: tick what goes into the copy,
+        /// the CSV and the summary QR; fix values in place. Personal fields
+        /// (buyer, e-mail, payment) start unticked; product keys and card
+        /// numbers are masked and can't be ticked. The user's ticks are
+        /// remembered for the next receipt.
+        /// </summary>
+        private UIElement ReceiptCard(Receipt r, UIElement header = null, string note = null)
+        {
+            AppSettings settings = App.Instance.Settings;
+            foreach (ReceiptField f in r.Fields.Where(f => !f.Secret))
+            {
+                if (settings.ReceiptOff.Contains(f.Field)) f.Selected = false;
+                else if (settings.ReceiptOn.Contains(f.Field)) f.Selected = true;
+            }
+
+            var stack = new StackPanel();
+            // No title after OCR: the card sits under the tabs, which already say "Receipt".
+            if (header != null) stack.Children.Add(header);
+            stack.Children.Add(new TextBlock { Text = note ?? S.ReceiptCheck, Style = (Style)FindResource("Muted"), Foreground = (Brush)FindResource("Warn"), Margin = new Thickness(0, 0, 0, 8) });
+
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(104) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition());
+            int row = 0;
+            foreach (ReceiptField f in r.Fields)
+            {
+                grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                var cb = new CheckBox { IsChecked = f.Selected, IsEnabled = !f.Secret, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 4, 4) };
+                cb.Click += (s, e) =>
+                {
+                    f.Selected = cb.IsChecked == true;
+                    settings.ReceiptOn.Remove(f.Field);
+                    settings.ReceiptOff.Remove(f.Field);
+                    bool byDefault = !f.Personal;
+                    if (f.Selected != byDefault) (f.Selected ? settings.ReceiptOn : settings.ReceiptOff).Add(f.Field);
+                    App.Instance.SaveSettings();
+                };
+                var label = new TextBlock { VerticalAlignment = VerticalAlignment.Center, FontSize = 12.5, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 8, 4) };
+                label.Inlines.Add(new Run(S.ReceiptField(f.Field)));
+                // Under the name: which one ("Receipt number") when there are several, and why it isn't ticked.
+                var notes = new List<string>();
+                if (ReceiptExport.Ambiguous(f, r)) notes.Add(f.Label);
+                if (f.Secret) notes.Add(S.NotSelectable);
+                else if (f.Personal) notes.Add(S.Personal);
+                if (notes.Count > 0)
+                    label.Inlines.Add(new Run(Environment.NewLine + string.Join(" · ", notes)) { Foreground = (Brush)FindResource("FgMuted"), FontSize = 11 });
+                var value = new TextBox { Text = f.Display, IsReadOnly = f.Secret, FontSize = 13, Padding = new Thickness(5, 2, 5, 2), Margin = new Thickness(0, 0, 0, 4), TextWrapping = TextWrapping.Wrap };
+                if (!f.Secret) value.TextChanged += (s, e) => f.Value = value.Text;
+                Grid.SetRow(cb, row); Grid.SetColumn(cb, 0);
+                Grid.SetRow(label, row); Grid.SetColumn(label, 1);
+                Grid.SetRow(value, row); Grid.SetColumn(value, 2);
+                grid.Children.Add(cb);
+                grid.Children.Add(label);
+                grid.Children.Add(value);
+                row++;
+            }
+            // The list scrolls on its own; the buttons under it stay in view.
+            stack.Children.Add(new ScrollViewer { Content = grid, MaxHeight = 290, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Padding = new Thickness(0, 0, 4, 0) });
+
+            var actions = new WrapPanel { Margin = new Thickness(0, 8, 0, 0) };
+            Button copy = ActionButton("", S.CopySummary, primary: true);
+            copy.Click += (s, e) => CopyWithFeedback(copy, ReceiptExport.Summary(r), sensitive: false);
+            actions.Children.Add(copy);
+            Button excel = ActionButton("", S.CopyForExcel, primary: false);
+            excel.Click += (s, e) => CopyWithFeedback(excel, ReceiptExport.Tabbed(r), sensitive: false);
+            actions.Children.Add(excel);
+            Button csv = ActionButton("", S.SaveCsv, primary: false);
+            csv.Click += (s, e) => SaveReceiptCsv(r);
+            actions.Children.Add(csv);
+            Button qr = ActionButton("", S.SummaryQr, primary: false);
+            qr.Click += (s, e) => App.Instance.ShowGenerator(ReceiptExport.Summary(r));
+            actions.Children.Add(qr);
+            stack.Children.Add(actions);
+
+            return new Border { Style = (Style)FindResource("Card"), Margin = new Thickness(0, 0, 0, 10), Child = stack };
+        }
+
+        private void SaveReceiptCsv(Receipt r)
+        {
+            var dlg = new SaveFileDialog { Filter = S.CsvFilter, FileName = S.ReceiptFileName + "-" + DateTime.Now.ToString("yyyyMMdd-HHmm") + ".csv" };
+            if (dlg.ShowDialog(this) != true) return;
+            try { File.WriteAllText(dlg.FileName, ReceiptExport.Csv(r, CultureInfo.CurrentCulture), new UTF8Encoding(true)); }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException) { Storage.LogError(ex); }
+        }
+
+        /// <summary>How a column gap shows in the text card (the copy for Excel turns it back into a tab).</summary>
+        private const string ColumnSpaces = "   ";
+
+        /// <summary>
+        /// No QR code, but text: an editable box (OCR makes mistakes) and a
+        /// copy button. Never copied on its own and never written to history:
+        /// the text may be anything on the user's screen.
+        /// </summary>
+        private UIElement TextCard(string text, bool showTitle = true)
+        {
+            var stack = new StackPanel();
+            var kind = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 8) };
+            kind.Children.Add(new TextBlock { Text = KindIcon(ContentKind.Text), Style = (Style)FindResource("Icon"), FontSize = 14, Foreground = (Brush)FindResource("Accent"), Margin = new Thickness(0, 0, 8, 0) });
+            kind.Children.Add(new TextBlock { Text = S.OcrKind, FontWeight = FontWeights.SemiBold, FontSize = 13 });
+            if (showTitle) stack.Children.Add(kind);
+
+            // Columns come tab-separated; a tab jumps to the next tab stop and looks
+            // like a hole in most places, so show (and copy) three spaces instead.
+            bool hasColumns = text.IndexOf('\t') >= 0;
+            var box = new TextBox
+            {
+                Text = text.Replace("\t", ColumnSpaces),
+                AcceptsReturn = true,
+                TextWrapping = TextWrapping.Wrap,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                MinHeight = 60,
+                MaxHeight = 260,
+                FontSize = 13.5,
+                Padding = new Thickness(6, 4, 6, 4),
+            };
+            stack.Children.Add(box);
+            // OCR is never perfect (1 vs I in codes, a lost "/"): say so where it can't be missed.
+            var check = new DockPanel { Margin = new Thickness(0, 8, 0, 0) };
+            var checkIcon = new TextBlock { Text = "", Style = (Style)FindResource("Icon"), FontSize = 13, Foreground = (Brush)FindResource("Bad"), Margin = new Thickness(0, 1, 7, 0), VerticalAlignment = VerticalAlignment.Top };
+            DockPanel.SetDock(checkIcon, Dock.Left);
+            check.Children.Add(checkIcon);
+            var checkText = new TextBlock { TextWrapping = TextWrapping.Wrap, FontSize = 12.5, Foreground = (Brush)FindResource("Bad") };
+            checkText.Inlines.Add(new Run(S.OcrCheckLead) { FontWeight = FontWeights.SemiBold, TextDecorations = TextDecorations.Underline });
+            checkText.Inlines.Add(new Run(" " + S.OcrCheck));
+            check.Children.Add(checkText);
+            stack.Children.Add(check);
+            stack.Children.Add(new TextBlock { Text = S.OcrNote, Style = (Style)FindResource("Muted"), Margin = new Thickness(0, 4, 0, 0) });
+
+            var actions = new WrapPanel { Margin = new Thickness(0, 10, 0, 0) };
+            Button copy = ActionButton("", S.CopyText, primary: true);
+            copy.Click += (s, e) => CopyWithFeedback(copy, box.Text, sensitive: false);
+            actions.Children.Add(copy);
+            if (hasColumns)
+            {
+                // Same text with the column gaps as tabs: pastes into Excel as cells (edits in the box included).
+                Button excel = ActionButton("", S.CopyForExcel, primary: false);
+                excel.ToolTip = S.CopyForExcelHint;
+                excel.Click += (s, e) => CopyWithFeedback(excel, Regex.Replace(box.Text, " {3,}", "\t"), sensitive: false);
+                actions.Children.Add(excel);
+            }
+            // The text as it is now in the box (fixes included) goes to the generator, which says if it's too long for a QR.
+            Button qr = ActionButton("", S.MakeQr, primary: false);
+            qr.Click += (s, e) => App.Instance.ShowGenerator(box.Text.Trim());
+            actions.Children.Add(qr);
+            stack.Children.Add(actions);
+
+            return new Border { Style = (Style)FindResource("Card"), Margin = new Thickness(0, 0, 0, 10), Child = stack };
+        }
+
         private void ShowResolved(ResolveResult r, StackPanel panel, WrapPanel actions)
         {
             panel.Children.Clear();
             panel.Visibility = Visibility.Visible;
 
+            bool refused = r.RefusedWith.HasValue;
             if (r.Chain.Count > 1)
             {
                 string path = string.Join("  →  ", r.Chain.Select(u => u.Host));
                 panel.Children.Add(new TextBlock { Text = S.RedirectPath + ": " + path, Style = (Style)FindResource("Muted"), Margin = new Thickness(0, 0, 0, 4) });
-                panel.Children.Add(HostLine(S.RealTarget, r.Final.IdnHost));
+                // Refused midway: this is only how far the check got, not where a browser lands.
+                panel.Children.Add(HostLine(refused ? S.ReachedSoFar : S.RealTarget, r.Final.IdnHost));
                 panel.Children.Add(RawText(r.Final.AbsoluteUri, mono: true));
                 foreach (string w in QrContent.Parse(r.Final.AbsoluteUri).Warnings) panel.Children.Add(Warning(w));
 
                 Button openReal = ActionButton("", S.OpenRealTarget, false);
                 openReal.Click += (s, e) => OpenTarget(r.Final.AbsoluteUri);
-                actions.Children.Insert(Math.Min(1, actions.Children.Count), openReal);
+                if (!refused) actions.Children.Insert(Math.Min(1, actions.Children.Count), openReal);
             }
-            else if (r.Error == null)
+            if (refused)
+            {
+                panel.Children.Add(Warning(S.ResolveRefused(r.RefusedWith.Value)));
+            }
+            else if (r.Chain.Count == 1 && r.Error == null)
             {
                 panel.Children.Add(new TextBlock { Text = S.NoRedirect, Style = (Style)FindResource("Muted") });
             }
@@ -470,6 +659,7 @@ namespace QRPeek.UI
                 case ContentKind.Location: return "";
                 case ContentKind.Otp: return "";
                 case ContentKind.Invoice: return "";
+                case ContentKind.Receipt: return "";
                 default: return "";
             }
         }
@@ -487,6 +677,7 @@ namespace QRPeek.UI
                 case ContentKind.Location: return S.KindLocation;
                 case ContentKind.Otp: return S.KindOtp;
                 case ContentKind.Invoice: return S.KindInvoice;
+                case ContentKind.Receipt: return S.KindReceipt;
                 default: return S.KindText;
             }
         }

@@ -15,6 +15,13 @@ namespace QRPeek.Core
         public Uri Final => Chain[Chain.Count - 1];
         /// <summary>Set when a hop failed; Chain still holds what was reached.</summary>
         public string Error { get; set; }
+
+        /// <summary>
+        /// The HTTP status (401, 403, 429…) when the last address refused the
+        /// check instead of answering it. Then we don't know where a browser
+        /// would end up: <see cref="Final"/> is only how far we got.
+        /// </summary>
+        public int? RefusedWith { get; set; }
     }
 
     /// <summary>
@@ -39,13 +46,16 @@ namespace QRPeek.Core
             for (int hop = 0; hop < MaxHops; hop++)
             {
                 Uri next;
+                int refused;
                 try
                 {
-                    next = NextHop(current, "HEAD");
+                    next = NextHop(current, "HEAD", out refused);
+                    // Some sites refuse HEAD but answer GET normally: ask once more before giving up.
+                    if (refused != 0) next = NextHop(current, "GET", out refused);
                 }
                 catch (WebException ex) when (IsMethodRejected(ex))
                 {
-                    try { next = NextHop(current, "GET"); }
+                    try { next = NextHop(current, "GET", out refused); }
                     catch (WebException ex2) { result.Error = Describe(ex2); return result; }
                 }
                 catch (WebException ex)
@@ -54,6 +64,12 @@ namespace QRPeek.Core
                     return result;
                 }
 
+                if (refused != 0)
+                {
+                    // e.g. a bot check (403): where a browser ends up is unknown, never "no redirect".
+                    result.RefusedWith = refused;
+                    return result;
+                }
                 if (next == null) return result; // not a redirect: this is the destination
                 if (next.Scheme != Uri.UriSchemeHttp && next.Scheme != Uri.UriSchemeHttps) return result;
                 if (result.Chain.Contains(next)) return result; // loop
@@ -63,9 +79,14 @@ namespace QRPeek.Core
             return result;
         }
 
-        /// <summary>The Location of a 3xx answer, or null for any other answer.</summary>
-        private static Uri NextHop(Uri url, string method)
+        /// <summary>
+        /// The Location of a 3xx answer, or null for any other answer.
+        /// <paramref name="refused"/> is the status when the site refused to
+        /// answer (see <see cref="IsRefusal"/>), else 0.
+        /// </summary>
+        private static Uri NextHop(Uri url, string method, out int refused)
         {
+            refused = 0;
             var req = (HttpWebRequest)WebRequest.Create(url);
             req.Method = method;
             req.AllowAutoRedirect = false;
@@ -82,7 +103,10 @@ namespace QRPeek.Core
             }
             catch (WebException ex) when (ex.Response is HttpWebResponse r && (int)r.StatusCode < 500 && (int)r.StatusCode != 405 && (int)r.StatusCode != 501)
             {
-                // 4xx: the site answered; it's the destination even if it refuses us.
+                // 4xx. A missing page (404, 410) is still the destination. But a
+                // refusal (403 bot check, 429, login) says nothing about where a
+                // browser would be sent, so it must not read as "no redirect".
+                if (IsRefusal(r)) refused = (int)r.StatusCode;
                 r.Dispose();
                 return null;
             }
@@ -98,6 +122,14 @@ namespace QRPeek.Core
                 }
                 return null;
             }
+        }
+
+        /// <summary>Answers that mean "not telling you" rather than "this is the page".</summary>
+        private static bool IsRefusal(HttpWebResponse r)
+        {
+            int code = (int)r.StatusCode;
+            return code == 401 || code == 403 || code == 407 || code == 429 || code == 451
+                   || !string.IsNullOrEmpty(r.Headers["cf-mitigated"]); // Cloudflare challenge, whatever the status
         }
 
         private static bool IsMethodRejected(WebException ex) =>
