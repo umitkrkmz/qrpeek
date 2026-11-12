@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -27,12 +28,18 @@ namespace QRPeek.UI
         }
 
         /// <param name="places">Which screen each code was on; null when there's only one screen or it wasn't a screen scan.</param>
-        internal void ShowItems(List<string> texts, bool autoCopied, IReadOnlyDictionary<string, ScreenPlace> places = null)
+        /// <param name="ocrText">When no QR code was found: the text OCR read in the same image (null = not tried / no OCR language).</param>
+        internal void ShowItems(List<string> texts, bool autoCopied, IReadOnlyDictionary<string, ScreenPlace> places = null, string ocrText = null)
         {
             Items.Children.Clear();
             CopiedBadge.Visibility = autoCopied ? Visibility.Visible : Visibility.Collapsed;
 
-            if (texts.Count == 0)
+            if (texts.Count == 0 && !string.IsNullOrWhiteSpace(ocrText))
+            {
+                Heading.Text = S.NoQrButText;
+                Items.Children.Add(TextCard(ocrText));
+            }
+            else if (texts.Count == 0)
             {
                 Heading.Text = S.NothingFound;
                 Items.Children.Add(new TextBlock { Text = S.NothingFoundHint, Style = (Style)FindResource("Muted"), FontSize = 13.5 });
@@ -130,6 +137,56 @@ namespace QRPeek.UI
                 ShowResolved(r, resolvePanel, actions);
             };
             actions.Children.Add(resolve);
+        }
+
+        /// <summary>How a column gap shows in the text card (the copy for Excel turns it back into a tab).</summary>
+        private const string ColumnSpaces = "   ";
+
+        /// <summary>
+        /// No QR code, but text: an editable box (OCR makes mistakes) and a
+        /// copy button. Never copied on its own and never written to history:
+        /// the text may be anything on the user's screen.
+        /// </summary>
+        private UIElement TextCard(string text)
+        {
+            var stack = new StackPanel();
+            var kind = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 8) };
+            kind.Children.Add(new TextBlock { Text = KindIcon(ContentKind.Text), Style = (Style)FindResource("Icon"), FontSize = 14, Foreground = (Brush)FindResource("Accent"), Margin = new Thickness(0, 0, 8, 0) });
+            kind.Children.Add(new TextBlock { Text = S.OcrKind, FontWeight = FontWeights.SemiBold, FontSize = 13 });
+            stack.Children.Add(kind);
+
+            // Columns come tab-separated; a tab jumps to the next tab stop and looks
+            // like a hole in most places, so show (and copy) three spaces instead.
+            bool hasColumns = text.IndexOf('\t') >= 0;
+            var box = new TextBox
+            {
+                Text = text.Replace("\t", ColumnSpaces),
+                AcceptsReturn = true,
+                TextWrapping = TextWrapping.Wrap,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                MinHeight = 60,
+                MaxHeight = 260,
+                FontSize = 13.5,
+                Padding = new Thickness(6, 4, 6, 4),
+            };
+            stack.Children.Add(box);
+            stack.Children.Add(new TextBlock { Text = S.OcrNote, Style = (Style)FindResource("Muted"), Margin = new Thickness(0, 6, 0, 0) });
+
+            var actions = new WrapPanel { Margin = new Thickness(0, 10, 0, 0) };
+            Button copy = ActionButton("", S.CopyText, primary: true);
+            copy.Click += (s, e) => CopyWithFeedback(copy, box.Text, sensitive: false);
+            actions.Children.Add(copy);
+            if (hasColumns)
+            {
+                // Same text with the column gaps as tabs: pastes into Excel as cells (edits in the box included).
+                Button excel = ActionButton("", S.CopyForExcel, primary: false);
+                excel.ToolTip = S.CopyForExcelHint;
+                excel.Click += (s, e) => CopyWithFeedback(excel, Regex.Replace(box.Text, " {3,}", "\t"), sensitive: false);
+                actions.Children.Add(excel);
+            }
+            stack.Children.Add(actions);
+
+            return new Border { Style = (Style)FindResource("Card"), Margin = new Thickness(0, 0, 0, 10), Child = stack };
         }
 
         private void ShowResolved(ResolveResult r, StackPanel panel, WrapPanel actions)

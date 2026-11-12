@@ -64,6 +64,7 @@ A small Windows tool that reads QR codes **on your screen**, with no camera or p
 - **QR oluşturucu:** metin, bağlantı ya da Wi-Fi; renk, desen (kare, yuvarlak, nokta), köşe işaretleri, ortaya QRPeek logosu ya da kendi logonuz. Her kod tasarlanırken QRPeek tarafından okunarak doğrulanır. PNG, SVG ya da panoya.
 - **Ekranı izleme modu (isteğe bağlı):** sunumda, toplantıda ya da videoda bir QR belirince sağ altta küçük bir uyarı çıkar; Rahatsız Etmeyin modunda da çalışır.
 - **Görselden okuma:** sürükle-bırak, `Ctrl + V` ya da dosya seçerek.
+- **QR yoksa yazıyı kopyala:** seçtiğiniz alanda ya da görselde QR kodu yoksa içindeki yazı Windows'un kendi yazı tanıma özelliğiyle (OCR) bu bilgisayarda okunur; düzeltip "Metni kopyala" ile alırsınız. İnternet yok, ek indirme yok.
 - **Küçük ve kurulumsuz:** Windows 10/11'de hazır gelen .NET Framework 4.8 ile çalışır, ek bir şey indirmez. Türkçe ve İngilizce, açık ve koyu tema.
 
 ### İndir
@@ -104,6 +105,7 @@ dotnet test
 - **QR generator:** text, link or Wi-Fi; color, pattern (square, rounded, dots), corner markers, the QRPeek logo or your own in the middle. Every code is read back by QRPeek as you design it. PNG, SVG or clipboard.
 - **Watch mode (optional):** when a QR code appears in a presentation, meeting or video, a small pop-up shows up bottom-right; works with Do Not Disturb on.
 - **From images:** drag and drop, `Ctrl + V`, or pick a file.
+- **No QR? Copy the text:** if the selected area or image has no QR code, its text is read with the OCR built into Windows, on this PC; fix it if needed and press "Copy text". No internet, nothing to download.
 - **Small, nothing to install:** runs on the .NET Framework 4.8 that ships with Windows 10/11 and downloads nothing extra. Turkish and English, light and dark theme.
 
 ### Download

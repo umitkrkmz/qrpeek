@@ -13,6 +13,9 @@ This file lists notable changes to QRPeek, by release.
 
 ### [Unreleased] — 0.3.0
 
+**Yeni**
+- **QR yoksa yazıyı kopyala:** seçilen alanda ya da görselde (sürükle-bırak, `Ctrl + V`, dosya) QR kodu bulunamazsa içindeki yazı Windows'un yerleşik OCR'ıyla okunur ve düzenlenebilir bir kartta gösterilir; "Metni kopyala" ile alınır. Ek indirme yok, internet yok; dil Windows'ta yüklü dillere göre seçilir. Okunan yazı geçmişe yazılmaz, kendiliğinden kopyalanmaz. Aynı satırdaki bilgiler (ör. "Sipariş Toplamı ... USD 1.99") bir arada kalır, sütunlar sekmeyle ayrılır; Excel'e yapıştırınca hücrelere bölünür. Seçimin kenarına yapışık harfler ve ince tek satırlar da okunur.
+
 **Düzeltmeler**
 - "Gerçek hedefi göster", bir site otomatik denetimi engellediğinde (ör. Cloudflare bot denetimi, HTTP 403) yanlışlıkla "Yönlendirme yok" diyordu. Artık "Bu site otomatik denetimi engelledi, gerçek hedef doğrulanamadı" uyarısı çıkıyor; yönlendirmenin ortasında engellenirse yalnızca "Şuraya kadar izlenebildi" gösteriliyor.
 
@@ -78,6 +81,9 @@ This file lists notable changes to QRPeek, by release.
 ## English
 
 ### [Unreleased] — 0.3.0
+
+**New**
+- **No QR? Copy the text:** if the selected area or image (drag and drop, `Ctrl + V`, file) has no QR code, its text is read with the OCR built into Windows and shown in an editable card; "Copy text" takes it. Nothing to download, no internet; the language follows those installed in Windows. The text isn't written to history or copied on its own. Items on the same row (e.g. "Order total ... USD 1.99") stay together, with columns separated by tabs, so it pastes into Excel as cells. Letters touching the edge of the selection and thin single lines are read too.
 
 **Fixes**
 - "Show real destination" said "No redirects" when a site blocked the automatic check (e.g. a Cloudflare bot check, HTTP 403). It now warns that the site blocked the check and the real destination couldn't be verified; if it's blocked midway, it only shows how far it got.
