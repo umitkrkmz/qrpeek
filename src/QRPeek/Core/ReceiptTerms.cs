@@ -41,6 +41,7 @@ namespace QRPeek.Core
 [item]      Description, Item, Items, Product, Service, Ürün, Hizmet, Açıklama, Öğe açıklaması, Mal hizmet
 [qty]       Qty, Quantity, Miktar, Adet
 [unitprice] Unit price, Price, Birim fiyat, Fiyat
+[amount]    Amount, Line total, Tutar, Toplam tutar
 [subtotal]  Subtotal, Sub total, Total excluding tax, Net amount, Ara toplam, Sipariş alt toplamı, Mal hizmet toplamı, Matrah
 [tax]       VAT, Tax, Sales tax, GST, KDV, Vergi, Hesaplanan KDV
 [taxid]     VAT registration, VAT number, VAT ID, Tax ID, VKN, TCKN, Vergi no, Vergi numarası, Vergi dairesi
@@ -208,7 +209,9 @@ namespace QRPeek.Core
                 if (string.Equals(t.Text, label, StringComparison.OrdinalIgnoreCase)) return MatchCase(t.Text, label);
                 if (label.Length < MinFuzzyLength || t.Text.Length < MinFuzzyLength) continue;
                 int allowed = t.Text.Length >= 12 ? 2 : 1;
-                int d = Distance(label.ToLowerInvariant(), t.Text.ToLowerInvariant());
+                string a = label.ToLowerInvariant(), b = t.Text.ToLowerInvariant();
+                // "Arnount": OCR reads m as rn (also d as cl, w as vv); one such swap is one mistake.
+                int d = Math.Min(Distance(a, b), Distance(Confusables(a), Confusables(b)));
                 if (d <= allowed && d < bestDistance)
                 {
                     best = t.Text;
@@ -239,6 +242,8 @@ namespace QRPeek.Core
             }
             return string.Join(" ", t);
         }
+
+        private static string Confusables(string s) => s.Replace("rn", "m").Replace("cl", "d").Replace("vv", "w");
 
         /// <summary>Edit distance with transpositions (optimal string alignment).</summary>
         internal static int Distance(string a, string b)

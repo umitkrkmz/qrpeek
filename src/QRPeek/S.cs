@@ -53,8 +53,9 @@ namespace QRPeek
         public static string NothingFound => T("QR kodu bulunamadı", "No QR code found");
         public static string NoQrButText => T("QR kodu yok, yazı okundu", "No QR code, but text was found");
         public static string OcrKind => T("Yazı", "Text");
-        public static string OcrNote => T("Windows'un kendi yazı tanıma özelliğiyle bu bilgisayarda okundu; hatalı harf olabilir, kopyalamadan önce düzeltebilirsiniz. Geçmişe kaydedilmez.",
-                                          "Read on this PC with the text recognition built into Windows; it can get letters wrong, so you can fix them before copying. Not saved to history.");
+        public static string OcrCheckLead => T("Kontrol edin:", "Check it:");
+        public static string OcrCheck => T("yazı tanıma bazı harf ve rakamları yanlış okuyabilir (ör. 1 ile I, 0 ile O). Kopyalamadan önce düzeltin.", "text recognition can misread some letters and digits (e.g. 1 and I, 0 and O). Fix them before copying.");
+        public static string OcrNote => T("Windows'un kendi yazı tanıma özelliğiyle bu bilgisayarda okundu. Geçmişe kaydedilmez.", "Read on this PC with the text recognition built into Windows. Not saved to history.");
         public static string CopyText => T("Metni kopyala", "Copy text");
         public static string CopyForExcel => T("Excel için kopyala", "Copy for Excel");
         public static string MakeQr => T("QR yap", "Make QR");

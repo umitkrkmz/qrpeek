@@ -42,7 +42,7 @@ namespace QRPeek.Core
         public static string Rows(IEnumerable<OcrWord> words)
         {
             var rows = new List<List<OcrWord>>();
-            foreach (OcrWord w in words.Where(w => !string.IsNullOrWhiteSpace(w.Text)).OrderBy(w => w.Box.Top))
+            foreach (OcrWord w in words.Where(w => !string.IsNullOrWhiteSpace(w.Text) && !IsIconNoise(w.Text)).OrderBy(w => w.Box.Top))
             {
                 List<OcrWord> row = rows.FirstOrDefault(r => SameRow(r, w));
                 if (row == null) rows.Add(row = new List<OcrWord>());
@@ -99,6 +99,79 @@ namespace QRPeek.Core
                 }
             }
             return result;
+        }
+
+        /// <summary>
+        /// Adds the words of <paramref name="other"/> that sit where
+        /// <paramref name="best"/> has nothing (a lone "Qty" header that only
+        /// the 3x pass read). From another language only labels and numbers are
+        /// taken: its plain words may be misreads ("Invoİce").
+        /// </summary>
+        public static List<OcrWord> FillGaps(IReadOnlyList<OcrWord> best, IReadOnlyList<OcrWord> other, bool sameLanguage, Func<string, bool> isKnownLabelWord)
+        {
+            var result = new List<OcrWord>(best);
+            foreach (OcrWord o in other)
+            {
+                string t = o.Text.Trim();
+                if (t.Length < 2 || !t.Any(char.IsLetterOrDigit)) continue;            // icons and specks
+                if (t.Length == 2 && char.IsLetter(t[0]) && !char.IsLetterOrDigit(t[1])) continue; // "C'"
+                if (!sameLanguage && !t.Any(char.IsDigit) && !isKnownLabelWord(t.Trim(',', '.', ':'))) continue;
+                if (result.Any(w => Overlap(w.Box, o.Box) >= 0.3f)) continue;
+                result.Add(o);
+            }
+            return result;
+        }
+
+        private static readonly Regex Email = new Regex(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}[.,;:)]?$");
+        private static readonly Regex Amount = new Regex(@"^\(?[₺$€£]\d{1,3}([.,]\d{3})*([.,]\d{1,2})?(/\p{L}+)?\)?[.,;:]?$");
+
+        /// <summary>An e-mail address or a currency amount that is complete and valid (after the usual digit fixes).</summary>
+        internal static bool IsWellFormed(string text)
+        {
+            string t = FixDigits(text.Trim(), null);
+            return Email.IsMatch(t) || Amount.IsMatch(t);
+        }
+
+        /// <summary>
+        /// Links and amounts are where one reading goes wrong and another gets
+        /// it right: an underlined e-mail turns into "z@ynel…âgmail.com", a
+        /// "₺179,99" into "UI 79,99". Where <paramref name="other"/> has a
+        /// complete, valid e-mail or amount and <paramref name="best"/> has
+        /// nothing valid on the same spot, the other one replaces it (even when
+        /// the best reading split it into several pieces).
+        /// </summary>
+        public static List<OcrWord> PreferWellFormed(IReadOnlyList<OcrWord> best, IReadOnlyList<OcrWord> other)
+        {
+            var result = new List<OcrWord>(best);
+            foreach (OcrWord o in other)
+            {
+                if (!IsWellFormed(o.Text)) continue;
+                // Words of the best reading that sit mostly inside this one.
+                List<OcrWord> covered = result.Where(w => Overlap(w.Box, o.Box) >= 0.5f).ToList();
+                if (covered.Count == 0) continue;
+                // Both valid: switch only to a real mail provider's address ("j@nedoeagmail.com" vs "janedoe@gmail.com").
+                bool better = covered.Any(w => IsWellFormed(w.Text))
+                    ? KnownMailDomain(o.Text) && !covered.Any(w => KnownMailDomain(w.Text))
+                    : true;
+                if (!better) continue;
+                foreach (OcrWord w in covered) result.Remove(w);
+                result.Add(o);
+            }
+            return result;
+        }
+
+        private static readonly HashSet<string> MailDomains = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "gmail.com", "googlemail.com", "outlook.com", "hotmail.com", "live.com", "msn.com", "yahoo.com", "icloud.com",
+            "me.com", "proton.me", "protonmail.com", "yandex.com", "yandex.ru", "aol.com", "gmx.com", "gmx.de", "mail.com",
+        };
+
+        private static bool KnownMailDomain(string text)
+        {
+            Match m = Email.Match(FixDigits(text.Trim(), null));
+            if (!m.Success) return false;
+            string t = m.Value.TrimEnd('.', ',', ';', ':', ')');
+            return MailDomains.Contains(t.Substring(t.IndexOf('@') + 1));
         }
 
         private static bool HasNativeLetters(string s) =>
@@ -169,17 +242,51 @@ namespace QRPeek.Core
                 }
             }
 
+            // "b179,99/ay" → "₺179,99/ay": Windows OCR has no ₺ and reads it as b; a
+            // Turkish-style amount with kuruş right after a b can only be lira.
+            Match lira = Regex.Match(token, @"^(\(?)b(\d{1,3}(?:\.\d{3})*,\d{2})(.*)$");
+            if (lira.Success) return lira.Groups[1].Value + "₺" + lira.Groups[2].Value + lira.Groups[3].Value;
+
             bool hasDigit = token.Any(char.IsDigit);
             bool onlyLookalikeLetters = token.All(c => !char.IsLetter(c) || DigitLookalikes.ContainsKey(c)) && token.Any(DigitLookalikes.ContainsKey);
             if (hasDigit && onlyLookalikeLetters) return Map(token);
+            if (hasDigit) return FixSegments(token);
 
             bool loneOne = token.Length <= 2 && token.All(c => c == 'I' || c == 'l' || c == '|');
             if (loneOne && next != null && Months.Contains(next.Trim(',', '.', ':'))) return Map(token);
             return token;
         }
 
+        /// <summary>
+        /// Codes made of groups ("SOP.3361-3923-9728-12645..0", "SKU-2026-A"):
+        /// a group with digits and only look-alike letters is a number ("2O26"),
+        /// and a lone look-alike right after a group of digits is one too ("..O").
+        /// Letter groups ("SOP", "A") stay.
+        /// </summary>
+        private static string FixSegments(string token)
+        {
+            string[] parts = Regex.Split(token, @"([.\-/:]+)"); // separators kept at odd indexes
+            string previousGroup = null;
+            for (int i = 0; i < parts.Length; i += 2)
+            {
+                string g = parts[i];
+                if (g.Length == 0) continue;
+                bool lookalikesOnly = g.All(c => !char.IsLetter(c) || DigitLookalikes.ContainsKey(c)) && g.Any(DigitLookalikes.ContainsKey);
+                bool digitsInside = g.Any(char.IsDigit);
+                bool afterDigits = previousGroup != null && previousGroup.All(char.IsDigit);
+                if (lookalikesOnly && (digitsInside || (afterDigits && g.Length <= 2))) parts[i] = Map(g);
+                previousGroup = parts[i];
+            }
+            return string.Concat(parts);
+        }
+
         private static string Map(string token) =>
             new string(token.Select(c => DigitLookalikes.TryGetValue(c, out char d) ? d : c).ToArray());
+
+        /// <summary>A colored icon read as a letter with a tick ("C'" for Google Play's points badge).</summary>
+        private static bool IsIconNoise(string t) =>
+            (t.Length == 2 && char.IsLetter(t[0]) && "'’`´\"".IndexOf(t[1]) >= 0)
+            || (t.Length == 1 && "ÇĞŞÖÜçğşöü".IndexOf(t[0]) >= 0); // never a word on its own in Turkish
 
         private static bool SameRow(List<OcrWord> row, OcrWord w)
         {

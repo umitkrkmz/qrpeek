@@ -37,16 +37,26 @@ namespace QRPeek.Tests
         public void Enlarges_small_crops_pads_them_and_caps_big_images()
         {
             using (var small = new Bitmap(300, 100))
-            using (Bitmap p = OcrReader.Prepare(small, 10000))
+            using (OcrReader.PreparedImage p = OcrReader.Prepare(small, 10000))
             {
                 // short side 100 -> 3x (900x300), plus a margin of 300/4 = 75 on every side
-                Assert.Equal(900 + 150, p.Width);
-                Assert.Equal(300 + 150, p.Height);
+                Assert.Equal(900 + 150, p.Bitmap.Width);
+                Assert.Equal(300 + 150, p.Bitmap.Height);
+                // A box found in the prepared image maps back onto the original.
+                RectangleF back = p.ToSource(75 + 30, 75 + 60, 90, 30);
+                Assert.Equal(new RectangleF(10, 20, 30, 10), back);
+            }
+            using (var mid = new Bitmap(800, 700))
+            using (OcrReader.PreparedImage p2 = OcrReader.Prepare(mid, 10000))
+            using (OcrReader.PreparedImage p3 = OcrReader.Prepare(mid, 10000, minScale: 3.0))
+            {
+                Assert.Equal(2f, p2.ScaleX); // a big selection is still enlarged: screen text is small
+                Assert.Equal(3f, p3.ScaleX);
             }
             using (var big = new Bitmap(4000, 2000))
-            using (Bitmap p = OcrReader.Prepare(big, 2600))
+            using (OcrReader.PreparedImage p = OcrReader.Prepare(big, 2600))
             {
-                Assert.True(p.Width <= 2600 && p.Height <= 2600);
+                Assert.True(p.Bitmap.Width <= 2600 && p.Bitmap.Height <= 2600);
             }
         }
 
@@ -56,9 +66,9 @@ namespace QRPeek.Tests
             using (var dark = new Bitmap(200, 40))
             {
                 using (Graphics g = Graphics.FromImage(dark)) g.Clear(Color.FromArgb(30, 30, 34));
-                using (Bitmap p = OcrReader.Prepare(dark, 10000))
+                using (OcrReader.PreparedImage p = OcrReader.Prepare(dark, 10000))
                 {
-                    Color corner = p.GetPixel(0, 0);
+                    Color corner = p.Bitmap.GetPixel(0, 0);
                     Assert.True(corner.R < 60 && corner.G < 60 && corner.B < 60, corner.ToString()); // not a white frame
                 }
             }
@@ -100,6 +110,20 @@ namespace QRPeek.Tests
         [InlineData("VAT S4.00", "VAT $4.00")]
         [InlineData("Paid S1,234.5O", "Paid $1,234.50")]
         [InlineData("Model S2000", "Model S2000")] // no cents: could be anything
+        // Windows OCR has no ₺: it reads "b" (a number never starts with b).
+        [InlineData("Toplam: b179,99/ay", "Toplam: ₺179,99/ay")]
+        [InlineData("(b30,00 tutarında KDV dahil)", "(₺30,00 tutarında KDV dahil)")]
+        [InlineData("Fiyat b1.234,50", "Fiyat ₺1.234,50")]
+        [InlineData("bob b12 b1,5", "bob b12 b1,5")]
+        // An O standing for 0 inside an order number made of digit groups.
+        [InlineData("SOP.3361-3923-9728-12645..O", "SOP.3361-3923-9728-12645..0")]
+        [InlineData("SKU-2O26-A", "SKU-2026-A")]
+        [InlineData("ABC-O", "ABC-O")]
+        // A colored icon read as a letter with a tick.
+        [InlineData("Kazanılan Play Puanları C' +198", "Kazanılan Play Puanları\t+198")] // the icon's gap stays a column gap
+        [InlineData("O'Brien l'école", "O'Brien l'école")]
+        [InlineData("Kazanılan Play Puanları Ç +198", "Kazanılan Play Puanları +198")] // the same icon without the tick (narrow: no column gap left)
+        [InlineData("o gün A ve B", "o gün A ve B")]                                       // real one-letter words stay
         [InlineData("SKU S-100", "SKU S-100")]
         public void Fixes_letters_read_in_place_of_digits(string ocr, string expected)
         {
@@ -127,6 +151,51 @@ namespace QRPeek.Tests
             Assert.Contains("Registration", merged);   // a label: the English reading stays
             Assert.Contains("Anthropic,", merged);     // "İ" inside a lower-case word is a misread, not Turkish
             Assert.DoesNotContain("omit", merged);
+        }
+
+        [Theory]
+        [InlineData("jane.doe@example.com", true)]
+        [InlineData("jane.doe@example.com.", true)]
+        [InlineData("z@nedoeâexample.com", false)] // an underlined link read badly
+        [InlineData("janedoeagmail.com", false)]
+        [InlineData("₺179,99/ay", true)]
+        [InlineData("b179,99/ay", true)]   // becomes ₺179,99/ay
+        [InlineData("$24.00", true)]
+        [InlineData("(₺30,00", true)]
+        [InlineData("79,99/ay", false)]    // no currency: not sure it's money
+        [InlineData("UI", false)]
+        public void Knows_a_complete_email_or_amount(string text, bool expected)
+        {
+            Assert.Equal(expected, OcrLayout.IsWellFormed(text));
+        }
+
+        [Fact]
+        public void A_valid_email_or_amount_from_another_reading_replaces_a_broken_one()
+        {
+            // The winning reading broke an underlined e-mail link and split "₺179,99/ay" into "UI 79,99/ay".
+            var best = new[] { W("Account:", 10, 10, 60), W("z@nedoeâexample.com", 80, 10, 150),
+                               W("UI", 300, 40, 14), W("79,99/ay", 318, 40, 60),
+                               W("Total:", 10, 70, 40), W("$24.00", 300, 70, 50) };
+            var other = new[] { W("Accounl:", 10, 10, 60), W("jane.doe@example.com", 80, 10, 152),
+                                W("b179,99/ay", 300, 40, 78),
+                                W("Total:", 10, 70, 40), W("$24.oo", 300, 70, 50) };
+            string text = OcrLayout.Rows(OcrLayout.PreferWellFormed(best, other)).Replace("\r\n", "\n");
+            // Only the broken values were taken: the other reading's "Accounl:" and "$24.oo" were not.
+            Assert.Equal("Account: jane.doe@example.com\n₺179,99/ay\nTotal:\t$24.00", text);
+        }
+
+        [Fact]
+        public void Between_two_valid_emails_a_known_mail_domain_wins()
+        {
+            // "e" read as "@" and "@" as "a": still a valid-looking address, but not a real mailbox.
+            var best = new[] { W("Account:", 10, 10, 60), W("j@nedoeagmail.com", 80, 10, 130) };
+            var other = new[] { W("Account:", 10, 10, 60), W("janedoe@gmail.com", 80, 10, 130) };
+            Assert.Equal("Account: janedoe@gmail.com", OcrLayout.Rows(OcrLayout.PreferWellFormed(best, other)));
+
+            // Two plausible addresses on a company domain: no reason to switch.
+            var best2 = new[] { W("support@anthropic.com", 10, 10, 150) };
+            var other2 = new[] { W("support@anthroplc.com", 10, 10, 150) };
+            Assert.Equal("support@anthropic.com", OcrLayout.Rows(OcrLayout.PreferWellFormed(best2, other2)));
         }
 
         [Fact]

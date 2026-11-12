@@ -41,6 +41,10 @@ namespace QRPeek.Tests
         [InlineData("Sipariş Numaras: 1679897483", "Sipariş Numarası: 1679897483")]
         [InlineData("Ara toplam\t20,00 USD", "Ara toplam\t20,00 USD")]
         [InlineData("TOTAL\t$24.00", "TOTAL\t$24.00")]
+        // Letter pairs OCR confuses (rn/m, cl/d, vv/w) count as one mistake.
+        [InlineData("Description\tQty\tArnount", "Description\tQty\tAmount")]
+        [InlineData("Arnount paid\t$24.00", "Amount paid\t$24.00")]
+        [InlineData("Paynnent method", "Payment method")]
         // Values and anything that isn't a near-miss of a label stay exactly as read.
         [InlineData("Anthropic, PBC\tBill to", "Anthropic, PBC\tBill to")]
         [InlineData("548 Market Street\tümit", "548 Market Street\tümit")]

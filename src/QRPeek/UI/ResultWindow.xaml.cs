@@ -170,7 +170,17 @@ namespace QRPeek.UI
                 Padding = new Thickness(6, 4, 6, 4),
             };
             stack.Children.Add(box);
-            stack.Children.Add(new TextBlock { Text = S.OcrNote, Style = (Style)FindResource("Muted"), Margin = new Thickness(0, 6, 0, 0) });
+            // OCR is never perfect (1 vs I in codes, a lost "/"): say so where it can't be missed.
+            var check = new DockPanel { Margin = new Thickness(0, 8, 0, 0) };
+            var checkIcon = new TextBlock { Text = "", Style = (Style)FindResource("Icon"), FontSize = 13, Foreground = (Brush)FindResource("Bad"), Margin = new Thickness(0, 1, 7, 0), VerticalAlignment = VerticalAlignment.Top };
+            DockPanel.SetDock(checkIcon, Dock.Left);
+            check.Children.Add(checkIcon);
+            var checkText = new TextBlock { TextWrapping = TextWrapping.Wrap, FontSize = 12.5, Foreground = (Brush)FindResource("Bad") };
+            checkText.Inlines.Add(new Run(S.OcrCheckLead) { FontWeight = FontWeights.SemiBold, TextDecorations = TextDecorations.Underline });
+            checkText.Inlines.Add(new Run(" " + S.OcrCheck));
+            check.Children.Add(checkText);
+            stack.Children.Add(check);
+            stack.Children.Add(new TextBlock { Text = S.OcrNote, Style = (Style)FindResource("Muted"), Margin = new Thickness(0, 4, 0, 0) });
 
             var actions = new WrapPanel { Margin = new Thickness(0, 10, 0, 0) };
             Button copy = ActionButton("", S.CopyText, primary: true);

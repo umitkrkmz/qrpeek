@@ -56,41 +56,93 @@ namespace QRPeek.Core
         /// "Regiştra", the English one gets it right. With no labels at all
         /// (a plain paragraph) the user's language is kept.
         /// </summary>
+        /// <param name="terms">Receipt labels to judge and clean readings with; null = built-in.</param>
+        /// <remarks>
+        /// The image is read at two sizes too: 2x is the base, and 3x catches
+        /// small faint words 2x misses (a lone "Qty" header) but loses others
+        /// ("20%"). Words of the other passes only fill the gaps of the best one.
+        /// All boxes are kept in the original image's coordinates, so readings
+        /// of different sizes line up.
+        /// </remarks>
         public static async Task<string> ReadAsync(Bitmap image, ReceiptTerms terms = null)
         {
             terms = terms ?? ReceiptTerms.Default;
             List<OcrEngine> engines = CreateEngines();
             if (engines.Count == 0) return null;
 
-            using (Bitmap prepared = Prepare(image, (int)OcrEngine.MaxImageDimension))
-            using (SoftwareBitmap sb = await ToSoftwareBitmap(prepared).ConfigureAwait(false))
+            var readings = new List<Reading>();
+            var scalesDone = new List<float>();
+            foreach (double minScale in new[] { 2.0, 3.0 })
             {
-                var readings = new List<List<OcrWord>>();
-                List<OcrWord> best = null;
-                int bestScore = -1;
-                foreach (OcrEngine engine in engines)
+                using (PreparedImage prepared = Prepare(image, (int)OcrEngine.MaxImageDimension, minScale))
                 {
-                    OcrResult result = await engine.RecognizeAsync(sb).AsTask().ConfigureAwait(false);
-                    List<OcrWord> words = result.Lines.SelectMany(l => l.Words)
-                        .Select(w => new OcrWord(w.Text, new RectangleF((float)w.BoundingRect.X, (float)w.BoundingRect.Y,
-                                                                        (float)w.BoundingRect.Width, (float)w.BoundingRect.Height)))
-                        .ToList();
-                    readings.Add(words);
-                    int score = terms.Score(terms.Polish(OcrLayout.Rows(words)));
-                    if (score > bestScore)
+                    if (scalesDone.Any(s => Math.Abs(s - prepared.ScaleX) < 0.05f)) continue; // capped to the same size: nothing new
+                    scalesDone.Add(prepared.ScaleX);
+                    using (SoftwareBitmap sb = await ToSoftwareBitmap(prepared.Bitmap).ConfigureAwait(false))
                     {
-                        best = words;
-                        bestScore = score;
+                        for (int e = 0; e < engines.Count; e++)
+                        {
+                            OcrResult result = await engines[e].RecognizeAsync(sb).AsTask().ConfigureAwait(false);
+                            List<OcrWord> words = result.Lines.SelectMany(l => l.Words)
+                                .Select(w => new OcrWord(w.Text, prepared.ToSource(w.BoundingRect.X, w.BoundingRect.Y, w.BoundingRect.Width, w.BoundingRect.Height)))
+                                .ToList();
+                            readings.Add(new Reading(e, readings.Count(r => r.Engine == e) == 0, words, terms.Score(terms.Polish(OcrLayout.Rows(words)))));
+                        }
                     }
                 }
-
-                // The winner may still have mangled names in the other language ("ümit" → "omit").
-                foreach (List<OcrWord> other in readings)
-                {
-                    if (!ReferenceEquals(other, best)) best = OcrLayout.KeepNativeLetters(best, other, terms.IsLabelWord);
-                }
-                return terms.Polish(OcrLayout.Rows(best));
             }
+
+            // The base size (first pass) of the language that knows the most labels.
+            Reading best = readings.Where(r => r.BaseSize).OrderByDescending(r => r.Score).ThenBy(r => r.Engine).First();
+            List<OcrWord> merged = best.Words;
+            // The winner may still have mangled names in the other language ("ümit" → "omit").
+            foreach (Reading other in readings.Where(r => r.BaseSize && r != best))
+                merged = OcrLayout.KeepNativeLetters(merged, other.Words, terms.IsLabelWord);
+            // A valid e-mail or amount from another reading beats a broken one on the same spot.
+            foreach (Reading other in readings.Where(r => r != best))
+                merged = OcrLayout.PreferWellFormed(merged, other.Words);
+            // Words only another size or language saw, where the winner has nothing.
+            foreach (Reading other in readings.Where(r => r != best).OrderBy(r => r.Engine == best.Engine ? 0 : 1))
+                merged = OcrLayout.FillGaps(merged, other.Words, sameLanguage: other.Engine == best.Engine, terms.IsLabelWord);
+            return terms.Polish(OcrLayout.Rows(merged));
+        }
+
+        private sealed class Reading
+        {
+            public Reading(int engine, bool baseSize, List<OcrWord> words, int score)
+            {
+                Engine = engine;
+                BaseSize = baseSize;
+                Words = words;
+                Score = score;
+            }
+
+            public int Engine { get; }
+            public bool BaseSize { get; }
+            public List<OcrWord> Words { get; }
+            public int Score { get; }
+        }
+
+        /// <summary>An image enlarged and padded for OCR, and how to map its boxes back to the source.</summary>
+        internal sealed class PreparedImage : IDisposable
+        {
+            public PreparedImage(Bitmap bitmap, float scaleX, float scaleY, int pad)
+            {
+                Bitmap = bitmap;
+                ScaleX = scaleX;
+                ScaleY = scaleY;
+                Pad = pad;
+            }
+
+            public Bitmap Bitmap { get; }
+            public float ScaleX { get; }
+            public float ScaleY { get; }
+            public int Pad { get; }
+
+            public RectangleF ToSource(double x, double y, double w, double h) =>
+                new RectangleF((float)((x - Pad) / ScaleX), (float)((y - Pad) / ScaleY), (float)(w / ScaleX), (float)(h / ScaleY));
+
+            public void Dispose() => Bitmap.Dispose();
         }
 
         /// <summary>The user's own OCR language first (keeps ç, ğ, ı, ş…), then the other installed ones.</summary>
@@ -124,12 +176,12 @@ namespace QRPeek.Core
         /// of a tight selection is dropped or misread ("Microsoft" →
         /// "icrosoft"), and a thin one-line crop may read as nothing at all.
         /// </summary>
-        internal static Bitmap Prepare(Bitmap src, int maxDimension)
+        internal static PreparedImage Prepare(Bitmap src, int maxDimension, double minScale = 2.0)
         {
             // Screen text is small whatever the size of the selection (a whole receipt
             // still has 10 px gray table headers), so always enlarge at least 2x;
             // thin crops up to 3x. Capped so a full 4K screen stays within limits.
-            double scale = 2.0;
+            double scale = minScale;
             int shortSide = Math.Min(src.Width, src.Height);
             if (shortSide < MinShortSide) scale = Math.Max(scale, Math.Min(3.0, (double)MinShortSide / Math.Max(1, shortSide)));
             double pixels = (double)src.Width * src.Height;
@@ -154,7 +206,7 @@ namespace QRPeek.Core
                 g.PixelOffsetMode = PixelOffsetMode.HighQuality;
                 g.DrawImage(src, pad, pad, w, h);
             }
-            return dst;
+            return new PreparedImage(dst, (float)w / src.Width, (float)h / src.Height, pad);
         }
 
         /// <summary>The usual color along the image's border: its background, light or dark.</summary>
