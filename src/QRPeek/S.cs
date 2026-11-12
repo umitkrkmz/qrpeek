@@ -268,6 +268,9 @@ namespace QRPeek
         public static string Resolving => T("Yönlendirmeler izleniyor…", "Following redirects…");
         public static string ResolveNote => T("Bağlantının sunucusuna tek bir istek gönderilir; sayfa açılmaz.", "Sends a request to the link's server; the page itself is not opened.");
         public static string RealTarget => T("Gerçek hedef", "Real destination");
+        public static string ReachedSoFar => T("Şuraya kadar izlenebildi", "Followed as far as");
+        public static string ResolveRefused(int code) => string.Format(T("Bu site otomatik denetimi engelledi (HTTP {0}), bu yüzden gerçek hedef doğrulanamadı. Bağlantıyı açarsanız tarayıcınız başka bir siteye yönlendirilebilir.",
+                                                                         "This site blocked the automatic check (HTTP {0}), so the real destination couldn't be verified. If you open the link, your browser may be sent to another site."), code);
         public static string RedirectPath => T("Yönlendirme yolu", "Redirect path");
         public static string NoRedirect => T("Yönlendirme yok: bağlantı doğrudan bu siteye gidiyor.", "No redirects: the link goes straight to this site.");
         public static string OpenRealTarget => T("Gerçek hedefi aç", "Open real destination");

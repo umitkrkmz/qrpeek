@@ -11,6 +11,11 @@ This file lists notable changes to QRPeek, by release.
 
 ## Türkçe
 
+### [Unreleased] — 0.3.0
+
+**Düzeltmeler**
+- "Gerçek hedefi göster", bir site otomatik denetimi engellediğinde (ör. Cloudflare bot denetimi, HTTP 403) yanlışlıkla "Yönlendirme yok" diyordu. Artık "Bu site otomatik denetimi engelledi, gerçek hedef doğrulanamadı" uyarısı çıkıyor; yönlendirmenin ortasında engellenirse yalnızca "Şuraya kadar izlenebildi" gösteriliyor.
+
 ### [0.2.0] — 2026-11-11
 
 **Telefondan al**
@@ -71,6 +76,11 @@ This file lists notable changes to QRPeek, by release.
 ---
 
 ## English
+
+### [Unreleased] — 0.3.0
+
+**Fixes**
+- "Show real destination" said "No redirects" when a site blocked the automatic check (e.g. a Cloudflare bot check, HTTP 403). It now warns that the site blocked the check and the real destination couldn't be verified; if it's blocked midway, it only shows how far it got.
 
 ### [0.2.0] — 2026-11-11
 

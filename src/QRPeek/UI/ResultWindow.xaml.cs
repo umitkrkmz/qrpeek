@@ -137,19 +137,25 @@ namespace QRPeek.UI
             panel.Children.Clear();
             panel.Visibility = Visibility.Visible;
 
+            bool refused = r.RefusedWith.HasValue;
             if (r.Chain.Count > 1)
             {
                 string path = string.Join("  →  ", r.Chain.Select(u => u.Host));
                 panel.Children.Add(new TextBlock { Text = S.RedirectPath + ": " + path, Style = (Style)FindResource("Muted"), Margin = new Thickness(0, 0, 0, 4) });
-                panel.Children.Add(HostLine(S.RealTarget, r.Final.IdnHost));
+                // Refused midway: this is only how far the check got, not where a browser lands.
+                panel.Children.Add(HostLine(refused ? S.ReachedSoFar : S.RealTarget, r.Final.IdnHost));
                 panel.Children.Add(RawText(r.Final.AbsoluteUri, mono: true));
                 foreach (string w in QrContent.Parse(r.Final.AbsoluteUri).Warnings) panel.Children.Add(Warning(w));
 
                 Button openReal = ActionButton("", S.OpenRealTarget, false);
                 openReal.Click += (s, e) => OpenTarget(r.Final.AbsoluteUri);
-                actions.Children.Insert(Math.Min(1, actions.Children.Count), openReal);
+                if (!refused) actions.Children.Insert(Math.Min(1, actions.Children.Count), openReal);
             }
-            else if (r.Error == null)
+            if (refused)
+            {
+                panel.Children.Add(Warning(S.ResolveRefused(r.RefusedWith.Value)));
+            }
+            else if (r.Chain.Count == 1 && r.Error == null)
             {
                 panel.Children.Add(new TextBlock { Text = S.NoRedirect, Style = (Style)FindResource("Muted") });
             }
