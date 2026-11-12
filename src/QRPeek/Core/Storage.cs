@@ -93,6 +93,31 @@ namespace QRPeek.Core
 
         public static void SaveHistory(List<HistoryEntry> items) => Write(HistoryPath, items);
 
+        /// <summary>The user's own receipt terms (plain text, same format as ReceiptTerms.BuiltIn); empty if none.</summary>
+        private static string TermsPath => Path.Combine(Folder, "terms.txt");
+
+        public static string LoadUserTerms()
+        {
+            try { return File.Exists(TermsPath) ? File.ReadAllText(TermsPath, System.Text.Encoding.UTF8) : ""; }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException) { return ""; }
+        }
+
+        public static void SaveUserTerms(string text)
+        {
+            try
+            {
+                Directory.CreateDirectory(Folder);
+                string tmp = TermsPath + ".tmp";
+                File.WriteAllText(tmp, text ?? "", new System.Text.UTF8Encoding(false));
+                if (File.Exists(TermsPath)) File.Replace(tmp, TermsPath, null);
+                else File.Move(tmp, TermsPath);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                LogError(ex);
+            }
+        }
+
         public static void DeleteHistory()
         {
             try { File.Delete(HistoryPath); } catch (IOException) { } catch (UnauthorizedAccessException) { }

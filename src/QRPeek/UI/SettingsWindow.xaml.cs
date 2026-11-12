@@ -26,6 +26,8 @@ namespace QRPeek.UI
         {
             InitializeComponent();
             WindowTheme.Attach(this);
+            // Never taller than the screen's work area: the content scrolls instead.
+            MaxHeight = SystemParameters.WorkArea.Height - 16;
 
             AppSettings s = App.Instance.Settings;
             _languageAtStart = s.Language;
@@ -50,6 +52,8 @@ namespace QRPeek.UI
             LangAuto.IsChecked = s.Language != "tr" && s.Language != "en";
             LangTr.IsChecked = s.Language == "tr";
             LangEn.IsChecked = s.Language == "en";
+
+            RefreshTermsSummary();
 
             Version v = Assembly.GetExecutingAssembly().GetName().Version;
             VersionText.Text = S.Version(v.Major + "." + v.Minor + "." + v.Build);
@@ -79,6 +83,18 @@ namespace QRPeek.UI
                 };
                 host.Children.Add(rb);
             }
+        }
+
+        private void RefreshTermsSummary()
+        {
+            ReceiptTerms.Check(Storage.LoadUserTerms(), out int user);
+            TermsSummary.Text = S.TermsSummary(ReceiptTerms.Default.Count, user);
+        }
+
+        private void OnEditTerms(object sender, RoutedEventArgs e)
+        {
+            new TermsWindow { Owner = this }.ShowDialog();
+            RefreshTermsSummary();
         }
 
         private void RefreshHotkeyErrors()

@@ -59,6 +59,41 @@ namespace QRPeek
         public static string CopyText => T("Metni kopyala", "Copy text");
         public static string CopyForExcel => T("Excel için kopyala", "Copy for Excel");
         public static string MakeQr => T("QR yap", "Make QR");
+
+        // Receipt terms (Settings)
+        public static string Save => T("Kaydet", "Save");
+        public static string Cancel => T("İptal", "Cancel");
+        public static string TermsTitle => T("Fatura sözlüğü", "Receipt terms");
+        public static string TermsSettingsHint => T("Yazı tanıma, faturalardaki başlıkları (Toplam, KDV, Invoice number…) bu sözlükle tanır. Türkçe ve İngilizce yerleşik; başka diller ya da kendi başlıklarınız için ekleyebilirsiniz.",
+                                                    "Text recognition knows invoice labels (Total, VAT, Invoice number…) from this list. Turkish and English are built in; add other languages or your own labels.");
+        public static string TermsEdit => T("Düzenle…", "Edit…");
+        public static string TermsSummary(int builtIn, int user) => string.Format(T("Yerleşik: {0} terim · Sizin: {1} terim", "Built in: {0} terms · Yours: {1} terms"), builtIn, user);
+        public static string TermsIntro => T("Yazı tanıma bu terimlerle doğru dili seçer, bölünen sözcükleri birleştirir ve başlıklardaki harf hatalarını düzeltir (ör. \"Ammount paid\" → \"Amount paid\"). İsim, adres, numara gibi değerlere hiç dokunmaz. Türkçe ve İngilizce yerleşik gelir; başka diller ya da kendi başlıklarınız için buraya ekleyin.",
+                                             "Text recognition uses these terms to pick the right language, join split words and fix typos in labels (e.g. \"Ammount paid\" → \"Amount paid\"). It never touches values such as names, addresses or numbers. Turkish and English are built in; add other languages or your own labels here.");
+        public static string TermsFormat => T("Her satır bir alan: [alan] terim, terim, …   Örnek: [total] Gesamtbetrag, Summe   ·   # ile başlayan satırlar nottur.",
+                                              "One field per line: [field] term, term, …   Example: [total] Gesamtbetrag, Summe   ·   Lines starting with # are notes.");
+        public static string TermsFieldList(string fields) => T("Alanlar: ", "Fields: ") + fields;
+        public static string TermsYours => T("Sizin terimleriniz", "Your terms");
+        public static string TermsTemplate => T("# Kendi terimleriniz. Örnek:\n# [total] Gesamtbetrag, Summe\n# [tax] MwSt", "# Your own terms. Example:\n# [total] Gesamtbetrag, Summe\n# [tax] MwSt").Replace("\n", System.Environment.NewLine);
+        public static string TermsShowBuiltIn => T("▸ Yerleşik terimleri göster", "▸ Show built-in terms");
+        public static string TermsHideBuiltIn => T("▾ Yerleşik terimleri gizle", "▾ Hide built-in terms");
+        public static string TermsImport => T("İçe aktar…", "Import…");
+        public static string TermsExport => T("Dışa aktar…", "Export…");
+        public static string TermsAiPrompt => T("AI için komutu kopyala", "Copy prompt for an AI");
+        public static string TermsAiHint => T("Başka bir dil için: komutu kendi kullandığınız bir AI'a yapıştırın, dili yazın, çıkan listeyi buraya ekleyin. QRPeek'in kendisi hiçbir yere bağlanmaz.",
+                                              "For another language: paste the prompt into an AI you use, name the language, and add the list it gives you here. QRPeek itself doesn't connect anywhere.");
+        public static string TermsAiPromptText(string fields) => string.Format(T(
+            "Aşağıdaki biçimde, [DİL] dilindeki fatura ve makbuzlarda kullanılan başlıkları listele.\nHer satır bir alan olsun: [alan] terim, terim, terim\nYalnızca şu alanları kullan: {0}\nHer alana o dilde gerçekten kullanılan başlıkları yaz (ör. [total] için toplam ve ödenecek tutar başlıkları). Açıklama ekleme, yalnızca listeyi yaz.\nÖrnek (İngilizce):\n[total] Total, Amount paid, Amount due\n[tax] VAT, Tax",
+            "List the labels used on invoices and receipts in [LANGUAGE], in this format.\nOne field per line: [field] term, term, term\nUse only these fields: {0}\nFor each field write the labels really used in that language (e.g. for [total]: the total and amount-due labels). No explanations, only the list.\nExample (English):\n[total] Total, Amount paid, Amount due\n[tax] VAT, Tax"), fields).Replace("\n", System.Environment.NewLine);
+        public static string TermsCount(int n) => string.Format(T("{0} terim", "{0} terms"), n);
+        public static string TermsProblems(int n) => string.Format(T("{0} sorun", "{0} problems"), n);
+        public static string TermsLine(int line, string message) => string.Format(T("{0}. satır: {1}", "Line {0}: {1}"), line, message);
+        public static string TermsBadLine => T("“[alan] terim, terim” biçiminde değil; yok sayılır.", "not in the “[field] term, term” format; it's skipped.");
+        public static string TermsUnknownField(string field) => string.Format(T("“[{0}]” bilinmeyen bir alan (yazım hatası mı?).", "“[{0}]” is not a known field (a typo?)."), field);
+        public static string TermsEmptyLine => T("alanın yanında terim yok.", "no terms next to the field.");
+        public static string TermsTooBig => T("Dosya çok büyük; bir terim listesi en fazla 256 KB olabilir.", "The file is too big; a term list can be at most 256 KB.");
+        public static string TermsReadFailed => T("Dosya okunamadı.", "Couldn't read the file.");
+        public static string TextFilter => T("Metin dosyası (*.txt)|*.txt", "Text file (*.txt)|*.txt");
         public static string CopyForExcelHint => T("Sütunlar sekmeyle ayrılır; Excel'e yapıştırınca hücrelere bölünür.", "Columns are separated by tabs, so they paste into Excel as cells.");
         public static string NothingFoundHint => T("Kod çok küçük, çok yoğun ya da kısmen kapalı olabilir. Sayfayı yakınlaştırıp (Ctrl + fare tekerleği) ya da kodun etrafını seçerek tekrar deneyin.",
                                                    "The code may be too small, too dense or partly covered. Zoom in on the page (Ctrl + mouse wheel) or select the area around the code and try again.");

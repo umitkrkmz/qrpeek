@@ -28,6 +28,7 @@ QRPeek, kendi bilgisayarınızda çalışan; ekrandaki QR kodlarını okuyan ve 
 Uygulama yalnızca çalışması için gerekenleri `%LOCALAPPDATA%\QRPeek` klasöründe saklar:
 
 - **Ayarlar** (`settings.json`): kısayollar, dil, seçenekler.
+- **Fatura sözlüğü** (`terms.txt`, yalnızca kendi terim eklediyseniz): Ayarlar → Fatura sözlüğü'ne yazdığınız başlıklar. "AI için komutu kopyala" yalnızca panoya bir metin kopyalar; QRPeek hiçbir AI'a ya da sunucuya bağlanmaz.
 - **Geçmiş** (`history.json`, ayarlardan kapatılabilir): okunan son 100 kodun metni. **2FA kodları hiç yazılmaz, Wi-Fi kodları şifresiz yazılır.** Geçmişi kapattığınızda dosya silinir.
 - **Hata günlüğü** (`error.log`): yalnızca bir hata olursa, teknik ayrıntılarla.
 
@@ -84,6 +85,7 @@ QRPeek is a Windows app that runs on your own computer; it reads QR codes on you
 The app stores only what it needs to work, in `%LOCALAPPDATA%\QRPeek`:
 
 - **Settings** (`settings.json`): shortcuts, language, options.
+- **Receipt terms** (`terms.txt`, only if you added your own): the labels you entered under Settings → Receipt terms. "Copy prompt for an AI" only copies a text to the clipboard; QRPeek doesn't connect to any AI or server.
 - **History** (`history.json`, can be turned off in Settings): the text of the last 100 codes read. **2FA codes are never written; Wi-Fi codes are written without the password.** Turning history off deletes the file.
 - **Error log** (`error.log`): only if something goes wrong, with technical details.
 

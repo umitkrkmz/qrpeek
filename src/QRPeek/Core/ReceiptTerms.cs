@@ -70,7 +70,64 @@ namespace QRPeek.Core
 
         public static ReceiptTerms Default { get; } = new ReceiptTerms(BuiltIn);
 
+        /// <summary>
+        /// What OCR uses: the built-in terms plus the user's own (Settings →
+        /// Receipt terms). Replaced as a whole when the user saves, so a reader
+        /// in progress keeps a consistent set.
+        /// </summary>
+        public static ReceiptTerms Current { get; private set; } = Default;
+
+        public static void UseUserTerms(string userText) =>
+            Current = string.IsNullOrWhiteSpace(userText) ? Default : new ReceiptTerms(BuiltIn, userText);
+
+        /// <summary>The fields the built-in terms use; the receipt card understands these.</summary>
+        public static IReadOnlyList<string> KnownFields { get; } = Default.Fields.ToList();
+
+        /// <summary>One problem in a user's term list, for the editor.</summary>
+        internal sealed class Problem
+        {
+            public Problem(int line, string message)
+            {
+                Line = line;
+                Message = message;
+            }
+
+            public int Line { get; }
+            public string Message { get; }
+        }
+
+        /// <summary>
+        /// Checks a user's term list: lines that aren't "[field] term, term"
+        /// (they'd be skipped) and field names the receipt card doesn't know
+        /// (likely a typo like "[toplm]"). Returns the problems and counts the good terms.
+        /// </summary>
+        internal static List<Problem> Check(string text, out int terms)
+        {
+            var problems = new List<Problem>();
+            terms = 0;
+            string[] lines = (text ?? "").Replace("\r\n", "\n").Split('\n');
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string line = lines[i].Trim();
+                if (line.Length == 0 || line[0] == '#') continue;
+                Match m = Regex.Match(line, @"^\[([^\]]+)\]\s*(.*)$");
+                if (!m.Success)
+                {
+                    problems.Add(new Problem(i + 1, S.TermsBadLine));
+                    continue;
+                }
+                string field = m.Groups[1].Value.Trim().ToLowerInvariant();
+                if (!KnownFields.Contains(field)) problems.Add(new Problem(i + 1, S.TermsUnknownField(field)));
+                int n = m.Groups[2].Value.Split(',').Count(p => p.Trim().Length > 0);
+                if (n == 0) problems.Add(new Problem(i + 1, S.TermsEmptyLine));
+                terms += n;
+            }
+            return problems;
+        }
+
         public IEnumerable<string> Fields => _terms.Select(t => t.Field).Distinct();
+
+        public int Count => _terms.Count;
 
         public IEnumerable<string> TermsOf(string field) => _terms.Where(t => t.Field == field).Select(t => t.Text);
 

@@ -1,0 +1,51 @@
+<Window x:Class="QRPeek.UI.TermsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:QRPeek"
+        Style="{StaticResource WindowBase}"
+        Title="{x:Static local:S.TermsTitle}" Width="660" Height="640" MinWidth="520" MinHeight="460"
+        ResizeMode="CanResize" WindowStartupLocation="CenterOwner"
+        Icon="pack://application:,,,/Assets/QRPeek.ico">
+    <Grid Margin="20,18,20,16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="{x:Static local:S.TermsIntro}" TextWrapping="Wrap" FontSize="13" />
+        <TextBlock Grid.Row="1" x:Name="FormatText" Style="{StaticResource Muted}" Margin="0,8,0,0" />
+
+        <DockPanel Grid.Row="2" Margin="0,14,0,6" LastChildFill="False">
+            <TextBlock DockPanel.Dock="Left" Text="{x:Static local:S.TermsYours}" Style="{StaticResource SectionTitle}" Margin="0" VerticalAlignment="Center" />
+            <Button x:Name="AiButton" DockPanel.Dock="Right" Style="{StaticResource Ghost}" Click="OnAiPrompt" ToolTip="{x:Static local:S.TermsAiHint}" Padding="8,3">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE8C8;" Style="{StaticResource Icon}" FontSize="12" Margin="0,0,6,0" />
+                    <TextBlock x:Name="AiText" Text="{x:Static local:S.TermsAiPrompt}" FontSize="12.5" />
+                </StackPanel>
+            </Button>
+            <Button DockPanel.Dock="Right" Style="{StaticResource Ghost}" Content="{x:Static local:S.TermsExport}" Click="OnExport" Padding="8,3" FontSize="12.5" />
+            <Button DockPanel.Dock="Right" Style="{StaticResource Ghost}" Content="{x:Static local:S.TermsImport}" Click="OnImport" Padding="8,3" FontSize="12.5" />
+        </DockPanel>
+
+        <TextBox Grid.Row="3" x:Name="Editor" AcceptsReturn="True" TextWrapping="NoWrap" FontFamily="{StaticResource MonoFont}" FontSize="13"
+                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Padding="8,6" TextChanged="OnTextChanged" />
+
+        <TextBlock Grid.Row="4" x:Name="StatusText" Style="{StaticResource Muted}" Margin="0,6,0,0" />
+
+        <StackPanel Grid.Row="5" Margin="0,10,0,0">
+            <Button x:Name="BuiltInToggle" Style="{StaticResource Ghost}" HorizontalAlignment="Left" Click="OnToggleBuiltIn" Padding="0,3" FontSize="12.5" />
+            <TextBox x:Name="BuiltInBox" Style="{StaticResource SelectableText}" FontFamily="{StaticResource MonoFont}" FontSize="12"
+                     MaxHeight="160" Visibility="Collapsed" Margin="0,4,0,0" />
+        </StackPanel>
+
+        <DockPanel Grid.Row="6" Margin="0,14,0,0" LastChildFill="False">
+            <Button DockPanel.Dock="Right" Style="{StaticResource Primary}" Content="{x:Static local:S.Save}" Click="OnSave" Margin="8,0,0,0" IsDefault="False" />
+            <Button DockPanel.Dock="Right" Content="{x:Static local:S.Cancel}" Click="OnCancel" IsCancel="True" />
+        </DockPanel>
+    </Grid>
+</Window>

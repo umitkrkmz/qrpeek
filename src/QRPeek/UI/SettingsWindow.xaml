@@ -6,6 +6,8 @@
         Title="{x:Static local:S.Settings}" Width="480" SizeToContent="Height"
         ResizeMode="NoResize" WindowStartupLocation="CenterScreen"
         Icon="pack://application:,,,/Assets/QRPeek.ico">
+    <!-- Scrolls when the screen is shorter than the settings (1080p minus the taskbar). -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="22,20,22,18">
         <TextBlock Text="{x:Static local:S.SetHotkey}" Style="{StaticResource SectionTitle}" />
         <WrapPanel x:Name="HotkeyChoices" />
@@ -44,6 +46,13 @@
         </WrapPanel>
         <TextBlock x:Name="LangNote" Text="{x:Static local:S.LangRestart}" Style="{StaticResource Muted}" Visibility="Collapsed" />
 
+        <TextBlock Text="{x:Static local:S.TermsTitle}" Style="{StaticResource SectionTitle}" Margin="0,14,0,4" />
+        <TextBlock Text="{x:Static local:S.TermsSettingsHint}" Style="{StaticResource Muted}" />
+        <DockPanel Margin="0,8,0,0">
+            <Button DockPanel.Dock="Left" Content="{x:Static local:S.TermsEdit}" Click="OnEditTerms" />
+            <TextBlock x:Name="TermsSummary" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="10,0,0,0" />
+        </DockPanel>
+
         <Border Style="{StaticResource Card}" Margin="0,18,0,0">
             <StackPanel>
                 <DockPanel>
@@ -70,4 +79,5 @@
             <Button DockPanel.Dock="Right" Style="{StaticResource Primary}" Content="{x:Static local:S.Close}" Click="OnClose" IsCancel="True" />
         </DockPanel>
     </StackPanel>
+    </ScrollViewer>
 </Window>

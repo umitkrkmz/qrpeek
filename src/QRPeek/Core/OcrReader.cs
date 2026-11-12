@@ -66,7 +66,7 @@ namespace QRPeek.Core
         /// </remarks>
         public static async Task<string> ReadAsync(Bitmap image, ReceiptTerms terms = null)
         {
-            terms = terms ?? ReceiptTerms.Default;
+            terms = terms ?? ReceiptTerms.Current;
             List<OcrEngine> engines = CreateEngines();
             if (engines.Count == 0) return null;
 

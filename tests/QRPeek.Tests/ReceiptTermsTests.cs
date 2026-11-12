@@ -63,6 +63,38 @@ namespace QRPeek.Tests
             Assert.Equal("Öğe açıklaması\tMiktar\tFiyat\nQRPeek\t1\tUSD 1.99", P("Öğe açıklaması\tMiktar\tFiyat\r\nQRPeek\t1\tUSD 1.99"));
         }
 
+        [Fact]
+        public void Checks_a_users_list_line_by_line()
+        {
+            S.Init("en");
+            string text = "# notes are fine\n[total] Gesamtbetrag, Summe\nGesamtbetrag\n[toplm] Toplam\n[tax]\n\n[tax] MwSt";
+            var problems = ReceiptTerms.Check(text, out int terms);
+            Assert.Equal(4, terms); // Gesamtbetrag, Summe, Toplam, MwSt
+            Assert.Equal(new[] { 3, 4, 5 }, problems.Select(p => p.Line));
+            Assert.Contains("format", problems[0].Message);
+            Assert.Contains("toplm", problems[1].Message);
+            Assert.Empty(ReceiptTerms.Check(ReceiptTerms.BuiltIn, out _)); // the built-in list passes its own check
+        }
+
+        [Fact]
+        public void The_users_terms_are_what_OCR_uses()
+        {
+            try
+            {
+                ReceiptTerms.UseUserTerms("[total] Gesamtbetrag\n[tax] MwSt");
+                Assert.Equal("Gesamtbetrag\t12,00 €", ReceiptTerms.Current.Polish("Gesamtbetrog\t12,00 €").Replace("\r\n", "\n"));
+                Assert.True(ReceiptTerms.Current.Score("MwSt 19%\nGesamtbetrag 12,00 €") > 0);
+                Assert.Contains("Toplam", ReceiptTerms.Current.TermsOf("total")); // built-in terms stay
+
+                ReceiptTerms.UseUserTerms("   ");
+                Assert.Same(ReceiptTerms.Default, ReceiptTerms.Current);
+            }
+            finally
+            {
+                ReceiptTerms.UseUserTerms("");
+            }
+        }
+
         [Theory]
         [InlineData("total", "totla", 1)]
         [InlineData("registration", "regiştra", 5)]

@@ -96,6 +96,7 @@ namespace QRPeek
             AppDomain.CurrentDomain.UnhandledException += (s, a) => Storage.LogError(a.ExceptionObject as Exception);
 
             Settings = Storage.LoadSettings();
+            ReceiptTerms.UseUserTerms(Storage.LoadUserTerms());
             S.Init(Settings.Language);
             WindowTheme.Apply(this, WindowTheme.SystemPrefersDark());
             SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
