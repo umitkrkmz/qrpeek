@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -26,8 +27,8 @@ namespace QRPeek.UI
         {
             InitializeComponent();
             WindowTheme.Attach(this);
-            // Never taller than the screen's work area: the content scrolls instead.
-            MaxHeight = SystemParameters.WorkArea.Height - 16;
+            // Fits small screens too; a page that doesn't fit scrolls.
+            Height = Math.Min(Height, SystemParameters.WorkArea.Height - 16);
 
             AppSettings s = App.Instance.Settings;
             _languageAtStart = s.Language;
@@ -54,6 +55,7 @@ namespace QRPeek.UI
             LangEn.IsChecked = s.Language == "en";
 
             RefreshTermsSummary();
+            ShowPage(s.SettingsPage); // where the user was last time
 
             Version v = Assembly.GetExecutingAssembly().GetName().Version;
             VersionText.Text = S.Version(v.Major + "." + v.Minor + "." + v.Build);
@@ -83,6 +85,28 @@ namespace QRPeek.UI
                 };
                 host.Children.Add(rb);
             }
+        }
+
+        private IEnumerable<StackPanel> Pages => new[] { PageShortcuts, PageGeneral, PageLanguage, PageOcr, PageAbout };
+
+        private IEnumerable<RadioButton> NavItems => new[] { NavShortcuts, NavGeneral, NavLanguage, NavOcr, NavAbout };
+
+        /// <summary>Shows one section; an unknown name (an old or edited settings file) falls back to the first.</summary>
+        internal void ShowPage(string name)
+        {
+            if (!Pages.Any(p => (string)p.Tag == name)) name = (string)PageShortcuts.Tag;
+            foreach (StackPanel p in Pages) p.Visibility = (string)p.Tag == name ? Visibility.Visible : Visibility.Collapsed;
+            foreach (RadioButton n in NavItems) n.IsChecked = (string)n.Tag == name;
+            PageScroller.ScrollToTop();
+        }
+
+        private void OnNav(object sender, RoutedEventArgs e)
+        {
+            string name = (string)((FrameworkElement)sender).Tag;
+            ShowPage(name);
+            App app = App.Instance;
+            app.Settings.SettingsPage = name;
+            app.SaveSettings();
         }
 
         private void RefreshTermsSummary()

@@ -64,6 +64,10 @@ namespace QRPeek
         public static string Save => T("Kaydet", "Save");
         public static string Cancel => T("İptal", "Cancel");
         public static string TermsTitle => T("Fatura sözlüğü", "Receipt terms");
+        public static string NavShortcuts => T("Kısayollar", "Shortcuts");
+        public static string NavGeneral => T("Genel", "General");
+        public static string NavOcr => T("Yazı tanıma", "Text recognition");
+        public static string OcrSettingsHint => T("Seçtiğiniz alanda ya da görselde QR kodu yoksa içindeki yazı, Windows'un yerleşik yazı tanıma özelliğiyle bu bilgisayarda okunur. Okunan yazı geçmişe kaydedilmez.", "If the area or image you pick has no QR code, its text is read on this PC with the text recognition built into Windows. The text is not saved to history.");
         public static string TermsSettingsHint => T("Yazı tanıma, faturalardaki başlıkları (Toplam, KDV, Invoice number…) bu sözlükle tanır. Türkçe ve İngilizce yerleşik; başka diller ya da kendi başlıklarınız için ekleyebilirsiniz.",
                                                     "Text recognition knows invoice labels (Total, VAT, Invoice number…) from this list. Turkish and English are built in; add other languages or your own labels.");
         public static string TermsEdit => T("Düzenle…", "Edit…");

@@ -25,6 +25,8 @@ namespace QRPeek.Core
         [DataMember] public string ReceiveHotkey { get; set; }
         /// <summary>Where files from the phone are saved; empty = Downloads\QRPeek.</summary>
         [DataMember] public string ReceiveFolder { get; set; }
+        /// <summary>The Settings section open last time (shortcuts, general, language, ocr, about).</summary>
+        [DataMember] public string SettingsPage { get; set; }
         [DataMember] public bool CopyAutomatically { get; set; }
         [DataMember] public bool KeepHistory { get; set; }
         [DataMember] public bool WatchScreen { get; set; }
@@ -50,6 +52,7 @@ namespace QRPeek.Core
             SendHotkey = HotkeyPreset.For(SendKey)[0].Id;
             ReceiveHotkey = "none";
             ReceiveFolder = "";
+            SettingsPage = "shortcuts";
             CopyAutomatically = true;
             KeepHistory = true;
             WatchScreen = false;
