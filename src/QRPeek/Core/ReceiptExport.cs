@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace QRPeek.Core
 {
@@ -31,6 +32,55 @@ namespace QRPeek.Core
                 sb.Append('\n').Append(S.ReceiptField("currency")).Append(": ").Append(r.Currency);
             sb.Append('\n').Append(S.NotOfficial);
             return sb.ToString().Replace("\n", Environment.NewLine);
+        }
+
+        /// <summary>
+        /// A summary made by <see cref="Summary"/> (on this PC or another, in
+        /// Turkish or English) back into a receipt, so a scanned summary QR opens
+        /// as a card with the CSV and Excel buttons. Anyone can make a QR that
+        /// looks like one, so it goes through the same rules as OCR: product keys
+        /// are dropped, card numbers masked, the buyer's details unticked.
+        /// Null when it isn't a summary or has no field we know.
+        /// </summary>
+        public static Receipt ReadSummary(string text)
+        {
+            string[] lines = (text ?? "").Replace("\r\n", "\n").Split('\n').Select(l => l.Trim()).Where(l => l.Length > 0).ToArray();
+            if (lines.Length < 2) return null;
+            bool turkish;
+            if (lines[0] == S.SummaryTitle(true)) turkish = true;
+            else if (lines[0] == S.SummaryTitle(false)) turkish = false;
+            else return null;
+
+            var names = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (string field in ReceiptParser.Order.Concat(Columns)) names[S.ReceiptField(field, turkish)] = field;
+
+            var r = new Receipt();
+            foreach (string line in lines.Skip(1))
+            {
+                if (line == S.NotOfficialIn(turkish)) continue;
+                int colon = line.IndexOf(": ", StringComparison.Ordinal);
+                if (colon <= 0) continue;
+                string name = line.Substring(0, colon).Trim();
+                string value = line.Substring(colon + 2).Trim();
+                string label = null;
+                if (!names.TryGetValue(name, out string field))
+                {
+                    // "Number (Receipt number)": the label tells several numbers apart.
+                    Match m = Regex.Match(name, @"^(.+?) \((.+)\)$");
+                    if (!m.Success || !names.TryGetValue(m.Groups[1].Value, out field)) continue;
+                    label = m.Groups[2].Value;
+                }
+                if (value.Length == 0 || field == "secret") continue;
+                if (field == "currency")
+                {
+                    if (Regex.IsMatch(value, @"^[A-Z]{3}$")) r.Currency = value;
+                    continue;
+                }
+                var f = new ReceiptField(field, value) { Label = label };
+                ReceiptParser.Classify(f);
+                r.Fields.Add(f);
+            }
+            return r.Fields.Count > 0 ? r : null;
         }
 
         /// <summary>"Number (Receipt number)" when a receipt has several numbers or dates, so they can be told apart.</summary>

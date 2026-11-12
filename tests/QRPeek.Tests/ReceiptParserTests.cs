@@ -109,6 +109,54 @@ namespace QRPeek.Tests
             Assert.Contains("PWZPIPZQ-0006 | 2843-7979-5973", ReceiptExport.Tabbed(r)); // one CSV/Excel cell
         }
 
+        [Theory]
+        [InlineData("tr", "en")]
+        [InlineData("en", "tr")]
+        [InlineData("en", "en")]
+        public void Reads_its_own_summary_back(string madeIn, string readIn)
+        {
+            try
+            {
+                S.Init(madeIn);
+                Receipt r = ReceiptParser.Parse(Anthropic, ReceiptTerms.Default);
+                string summary = ReceiptExport.Summary(r);
+
+                S.Init(readIn); // scanned on a PC set to another language
+                Receipt back = ReceiptExport.ReadSummary(summary);
+                Assert.NotNull(back);
+                Assert.Equal(r.Fields.Where(f => f.Selected).Select(f => f.Field + "=" + f.Value.Trim()),
+                             back.Fields.Select(f => f.Field + "=" + f.Value));
+                Assert.Equal("Receipt number", back.Fields.Last(f => f.Field == "number").Label);
+                Assert.Equal("USD", back.Currency);
+                Assert.True(back["total"].Selected);
+
+                QrContent c = QrContent.Parse(summary);
+                Assert.Equal(ContentKind.Receipt, c.Kind);
+                Assert.Equal("Anthropic, PBC · $24.00", c.Summary);
+            }
+            finally { S.Init("en"); }
+        }
+
+        [Fact]
+        public void A_summary_from_elsewhere_is_held_to_the_same_rules()
+        {
+            S.Init("en");
+            // Not ours: no marker, or a marker and nothing we know.
+            Assert.Null(ReceiptExport.ReadSummary("Total: $5.00"));
+            Assert.Null(ReceiptExport.ReadSummary("QRPeek receipt summary\nhello world"));
+            Assert.Equal(ContentKind.Text, QrContent.Parse("QRPeek receipt summary\nhello world").Kind);
+
+            // A hand-made QR can carry anything: a product key never shows, a card is masked,
+            // personal fields start unticked.
+            Receipt r = ReceiptExport.ReadSummary("QRPeek receipt summary\nTotal: $5.00\nProduct key: ABCDE-FGHIJ-KLMNO-PQRST-VWXYZ\nPayment: 4111 1111 1111 1111\nBuyer: Jane Doe\n(Not an official document.)");
+            Assert.NotNull(r);
+            Assert.Null(r["secret"]);
+            Assert.True(r["payment"].Secret);
+            Assert.Equal("•••• 1111", r["payment"].Display);
+            Assert.False(r["buyer"].Selected);
+            Assert.DoesNotContain("4111", ReceiptExport.Summary(r));
+        }
+
         [Fact]
         public void A_96_under_the_tax_column_is_a_percent()
         {

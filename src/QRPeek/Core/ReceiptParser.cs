@@ -233,18 +233,21 @@ namespace QRPeek.Core
             foreach (string it in items) found.Add(new ReceiptField("item", it));
             // Card order; several numbers or dates keep the order they had on the receipt.
             foreach (string field in Order) receipt.Fields.AddRange(found.Where(f => f.Field == field));
-            foreach (ReceiptField f in receipt.Fields)
-            {
-                f.Secret = f.Field == "secret" || KeyLike.IsMatch(f.Value) || IsCardNumber(f.Value);
-                f.Personal = !f.Secret && (f.Field == "buyer" || f.Field == "payment" || Email.IsMatch(f.Value));
-                f.Selected = !f.Secret && !f.Personal;
-            }
+            foreach (ReceiptField f in receipt.Fields) Classify(f);
 
             bool hasTotal = receipt["total"] != null;
             bool hasNumberAndDate = receipt["number"] != null && receipt["date"] != null;
             if (!hasTotal && !hasNumberAndDate) return null;
             receipt.Currency = GuessCurrency(receipt["total"]?.Value ?? receipt["subtotal"]?.Value ?? text);
             return receipt;
+        }
+
+        /// <summary>Product keys and card numbers are secrets (masked, never picked); the buyer's details start unpicked.</summary>
+        internal static void Classify(ReceiptField f)
+        {
+            f.Secret = f.Field == "secret" || KeyLike.IsMatch(f.Value) || IsCardNumber(f.Value);
+            f.Personal = !f.Secret && (f.Field == "buyer" || f.Field == "payment" || Email.IsMatch(f.Value));
+            f.Selected = !f.Secret && !f.Personal;
         }
 
         private static bool LooksLikeName(string s) =>

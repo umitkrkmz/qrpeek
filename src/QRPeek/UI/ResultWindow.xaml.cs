@@ -89,6 +89,9 @@ namespace QRPeek.UI
 
         private UIElement BuildCard(QrContent c, ScreenPlace? where = null)
         {
+            // QRPeek's own summary QR: back into a receipt card (CSV, Excel copy).
+            if (c.Kind == ContentKind.Receipt) return ReceiptCard(c.Receipt, KindLine(c.Kind, where), S.ReceiptFromQr);
+
             var stack = new StackPanel();
             stack.Children.Add(KindLine(c.Kind, where));
             var actions = new WrapPanel { Margin = new Thickness(0, 10, 0, 0) };
@@ -168,7 +171,7 @@ namespace QRPeek.UI
         /// numbers are masked and can't be ticked. The user's ticks are
         /// remembered for the next receipt.
         /// </summary>
-        private UIElement ReceiptCard(Receipt r)
+        private UIElement ReceiptCard(Receipt r, UIElement header = null, string note = null)
         {
             AppSettings settings = App.Instance.Settings;
             foreach (ReceiptField f in r.Fields.Where(f => !f.Secret))
@@ -178,8 +181,9 @@ namespace QRPeek.UI
             }
 
             var stack = new StackPanel();
-            // No title: the card always sits under the tabs, which already say "Receipt".
-            stack.Children.Add(new TextBlock { Text = S.ReceiptCheck, Style = (Style)FindResource("Muted"), Foreground = (Brush)FindResource("Warn"), Margin = new Thickness(0, 0, 0, 8) });
+            // No title after OCR: the card sits under the tabs, which already say "Receipt".
+            if (header != null) stack.Children.Add(header);
+            stack.Children.Add(new TextBlock { Text = note ?? S.ReceiptCheck, Style = (Style)FindResource("Muted"), Foreground = (Brush)FindResource("Warn"), Margin = new Thickness(0, 0, 0, 8) });
 
             var grid = new Grid();
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -655,6 +659,7 @@ namespace QRPeek.UI
                 case ContentKind.Location: return "";
                 case ContentKind.Otp: return "";
                 case ContentKind.Invoice: return "";
+                case ContentKind.Receipt: return "";
                 default: return "";
             }
         }
@@ -672,6 +677,7 @@ namespace QRPeek.UI
                 case ContentKind.Location: return S.KindLocation;
                 case ContentKind.Otp: return S.KindOtp;
                 case ContentKind.Invoice: return S.KindInvoice;
+                case ContentKind.Receipt: return S.KindReceipt;
                 default: return S.KindText;
             }
         }

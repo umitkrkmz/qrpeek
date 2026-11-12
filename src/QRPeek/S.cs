@@ -66,34 +66,43 @@ namespace QRPeek
         public static string FullText => T("Tam metin", "Full text");
         public static string ReceiptCheck => T("Yazı tanımayla okundu; değerleri kontrol edin, gerekirse düzeltin. Yalnızca işaretli alanlar kopyalanır, CSV'ye ve QR'a girer.",
                                                "Read with text recognition: check the values and fix them if needed. Only ticked fields are copied, saved to CSV or put in the QR.");
+        public static string ReceiptFromQr => T("Bir QRPeek makbuz özetinden okundu; resmî belge değildir. Yalnızca işaretli alanlar kopyalanır, CSV'ye ve QR'a girer.",
+                                                "Read from a QRPeek receipt summary; not an official document. Only ticked fields are copied, saved to CSV or put in the QR.");
+        public static string KindReceipt => T("Makbuz özeti", "Receipt summary");
         public static string Personal => T("kişisel", "personal");
         public static string NotSelectable => T("seçilemez", "can't be picked");
         public static string SummaryQr => T("Özet QR", "Summary QR");
         public static string CopySummary => T("Özeti kopyala", "Copy summary");
-        public static string ReceiptSummaryTitle => T("QRPeek makbuz özeti", "QRPeek receipt summary");
-        public static string NotOfficial => T("(Resmî belge değildir.)", "(Not an official document.)");
+        public static string ReceiptSummaryTitle => SummaryTitle(_tr);
+        internal static string SummaryTitle(bool turkish) => turkish ? "QRPeek makbuz özeti" : "QRPeek receipt summary";
+        public static string NotOfficial => NotOfficialIn(_tr);
+        internal static string NotOfficialIn(bool turkish) => turkish ? "(Resmî belge değildir.)" : "(Not an official document.)";
         public static string ReceiptFileName => T("makbuz", "receipt");
-        public static string ReceiptField(string field)
+        public static string ReceiptField(string field) => ReceiptField(field, _tr);
+
+        /// <summary>A field's name in Turkish or English, whatever the app's language (to read a summary made on another PC).</summary>
+        internal static string ReceiptField(string field, bool turkish)
         {
+            string L(string tr, string en) => turkish ? tr : en;
             switch (field)
             {
-                case "seller": return T("Satıcı", "Seller");
-                case "document": return T("Belge", "Document");
-                case "number": return T("Belge no", "Number");
-                case "date": return T("Tarih", "Date");
-                case "period": return T("Dönem", "Period");
-                case "item": return T("Kalem", "Item");
-                case "qty": return T("Miktar", "Quantity");
-                case "unitprice": return T("Birim fiyat", "Unit price");
-                case "amount": return T("Tutar", "Amount");
-                case "subtotal": return T("Ara toplam", "Subtotal");
-                case "tax": return T("KDV / vergi", "Tax");
-                case "total": return T("Toplam", "Total");
-                case "currency": return T("Para birimi", "Currency");
-                case "buyer": return T("Alıcı", "Buyer");
-                case "payment": return T("Ödeme", "Payment");
-                case "taxid": return T("Vergi no", "Tax ID");
-                case "secret": return T("Ürün anahtarı", "Product key");
+                case "seller": return L("Satıcı", "Seller");
+                case "document": return L("Belge", "Document");
+                case "number": return L("Belge no", "Number");
+                case "date": return L("Tarih", "Date");
+                case "period": return L("Dönem", "Period");
+                case "item": return L("Kalem", "Item");
+                case "qty": return L("Miktar", "Quantity");
+                case "unitprice": return L("Birim fiyat", "Unit price");
+                case "amount": return L("Tutar", "Amount");
+                case "subtotal": return L("Ara toplam", "Subtotal");
+                case "tax": return L("KDV / vergi", "Tax");
+                case "total": return L("Toplam", "Total");
+                case "currency": return L("Para birimi", "Currency");
+                case "buyer": return L("Alıcı", "Buyer");
+                case "payment": return L("Ödeme", "Payment");
+                case "taxid": return L("Vergi no", "Tax ID");
+                case "secret": return L("Ürün anahtarı", "Product key");
                 default: return field;
             }
         }
