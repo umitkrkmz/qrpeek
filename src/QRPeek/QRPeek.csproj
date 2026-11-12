@@ -18,7 +18,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>
 
-    <Version>0.2.0</Version>
+    <Version>0.3.0</Version>
     <Product>QRPeek</Product>
     <Company>QRPeek</Company>
     <Description>QRPeek - read QR codes on your screen, create QR codes</Description>

@@ -40,10 +40,11 @@ namespace QRPeek.Core
         private const float ColumnGap = 1.6f;
 
         private static readonly Regex PercentSeen = new Regex(@"(?<!\d)(\d{1,2})\s?%|%\s?(\d{1,2})(?!\d)", RegexOptions.CultureInvariant);
-        private static readonly Regex PercentAs96 = new Regex(@"^(\d{1,2})96$", RegexOptions.CultureInvariant);
+        /// <summary>How Windows OCR misreads "20%": "2096", and in small UI fonts "207/2".</summary>
+        private static readonly Regex PercentAs96 = new Regex(@"^(\d{1,2})(?:96|7/2)$", RegexOptions.CultureInvariant);
 
         /// <summary>
-        /// Windows OCR often reads "%" as "96", so a table's "20%" came out as "2096".
+        /// Windows OCR often reads "%" as "96" (or "7/2"), so a table's "20%" came out as "2096".
         /// That is only undone with two cues together: the cell is nothing but that
         /// number in a row that also has an amount (a table row, not a year or a model
         /// name), and the same percent is read correctly somewhere else ("VAT (20% on
@@ -73,7 +74,7 @@ namespace QRPeek.Core
             return string.Join(Environment.NewLine, lines);
         }
 
-        /// <summary>A cell under a tax column that reads "2096": the OCR's "20%".</summary>
+        /// <summary>A cell under a tax column that reads "2096" or "207/2": the OCR's "20%".</summary>
         internal static string PercentUnderTax(string cell)
         {
             Match m = PercentAs96.Match(cell.Trim());

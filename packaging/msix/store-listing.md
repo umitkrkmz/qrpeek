@@ -41,7 +41,7 @@ the last one. Rules that shaped it (Microsoft Store Policies):
 - Publishing hold: **"Don't publish this submission until I select Publish now"**, so the Store release and the GitHub release (`v0.1.0`, `v0.2.0`…) go out the same day. GitHub is pushed only after the Store version is live.
 - Notes for certification (testers only, English):
 
-> No account or sign-in needed. To test: open any web page or image that shows a QR code and press Ctrl+Alt+Q (or click "Scan screen"); a card with the decoded content appears. Ctrl+Alt+W shows the clipboard text as a QR code. "Send to phone" serves files over the local network only, so Windows Firewall may ask for permission. "Receive from phone" (tray menu, or "Receive files" in the send window) shows a QR code; open it on a phone or another device on the same network, pick files there, and they are saved to Downloads\QRPeek only after you press Accept on the PC. "Connect" on a Wi-Fi card may make Windows ask for location access (Windows 11 24H2 and later). The app keeps running in the notification area after its window is closed; use Settings > Quit QRPeek to exit.
+> No account or sign-in needed. To test: open any web page or image that shows a QR code and press Ctrl+Alt+Q (or click "Scan screen"); a card with the decoded content appears. Ctrl+Alt+W shows the clipboard text as a QR code. "Send to phone" serves files over the local network only, so Windows Firewall may ask for permission. "Receive from phone" (tray menu, or "Receive files" in the send window) shows a QR code; open it on a phone or another device on the same network, pick files there, and they are saved to Downloads\QRPeek only after you press Accept on the PC. "Connect" on a Wi-Fi card may make Windows ask for location access (Windows 11 24H2 and later). New in 0.3: "Select area" over text that has no QR code (for example a receipt on a web page) shows the text, read on the device with the Windows.Media.Ocr API; if it looks like a receipt, a card with its fields appears (nothing is uploaded). The app keeps running in the notification area after its window is closed; use Settings > Quit QRPeek to exit.
 
 ---
 
@@ -49,7 +49,7 @@ the last one. Rules that shaped it (Microsoft Store Policies):
 
 **Kısa açıklama** (≤ 270 karakter)
 
-> Ekrandaki QR kodlarını kamera ya da telefon olmadan okuyun, yeni QR kodları oluşturun. Tek kısayolla tüm ekranları tarar, bağlantının gerçek hedefini gösterir, telefonunuzla link ve dosya alıp verir. Hesap yok, reklam yok, telemetri yok.
+> Ekrandaki QR kodlarını kamera ya da telefon olmadan okuyun, yeni QR kodları oluşturun. Tek kısayolla tüm ekranları tarar, bağlantının gerçek hedefini gösterir, QR'ı olmayan makbuzları okur, telefonunuzla dosya alıp verir. Hesap yok, reklam yok, telemetri yok.
 
 **Açıklama**
 
@@ -72,6 +72,8 @@ Telefondan al: telefon ya da tablet QR'ı okutur ve dosyaları seçer; bilgisaya
 
 QR oluşturucu: metin, bağlantı ya da Wi-Fi için; renk, desen (kare, yuvarlak, nokta), köşe işaretleri ve ortaya QRPeek logosu ya da kendi logonuz. QRPeek her kodu siz tasarlarken okuyarak doğrular, böylece çalışmayan bir kodu yazdırmazsınız. PNG, SVG ya da panoya.
 
+QR yoksa yazı ve makbuzlar: seçtiğiniz alanda QR kodu yoksa içindeki yazı Windows'un kendi yazı tanıma özelliğiyle, bu bilgisayarda okunur; düzeltip kopyalarsınız. Yazı bir makbuz ya da faturaysa satıcı, belge no, tarih, kalemler, KDV ve toplam ayrı alanlarda gelir. İstediğiniz alanları işaretleyip özet olarak kopyalayın, Excel'e aktarın, CSV kaydedin ya da her telefonun okuyabileceği bir özet QR yapın. Kişisel bilgiler işaretsiz gelir; ürün anahtarı ve kart numarası maskelenir ve hiçbir çıktıya girmez.
+
 İsteğe bağlı ekranı izleme modu: sunumda, toplantıda ya da videoda bir QR belirince sağ altta küçük bir uyarı çıkar.
 
 Gizliliğiniz sizde: hesap yok, reklam yok, telemetri yok. Ekran görüntüleri yalnızca bellekte işlenir; kaydedilmez, gönderilmez. Wi-Fi'a bağlanırken Windows konum izni isteyebilir; QRPeek bunu yalnızca bağlantıyı doğrulamak için kullanır, konumunuzu okumaz.
@@ -83,14 +85,16 @@ Açık kaynak: QRPeek GPL-3.0 lisanslı açık kaynak bir projedir ve kaynak kod
 
 **Bu sürümdeki yenilikler**
 
-> 0.2.0 — Yeni: Telefondan al. Telefon ya da tabletten bilgisayara fotoğraf ve dosya; cihaza uygulama kurmadan, yalnızca sizin onayınızla. Dosyalar yerel ağdan gelir ve İndirilenler\QRPeek klasörüne kaydedilir, hiçbiri kendiliğinden açılmaz. Ayrıca: birden çok ekranda kodun hangi ekranda bulunduğu gösterilir; ana pencerede "Telefona gönder / al" düğmesi.
+> 0.3.0 — Yeni: QR'ı olmayan makbuzlar. Seçtiğiniz alanda QR yoksa yazı Windows'un kendi yazı tanımasıyla bu bilgisayarda okunur; makbuz ve faturalar seçilebilir alanlı bir karta dönüşür (özet, Excel, CSV, özet QR). Başka diller için düzenlenebilir fatura sözlüğü, bölümlü yeni Ayarlar. Düzeltme: kısaltılmış bir bağlantıyı açan site otomatik denetimi engellediğinde "Yönlendirme yok" yerine bu açıkça söylenir.
+
+(0.2.0 sürümünde: "Yeni: Telefondan al. Telefon ya da tabletten bilgisayara fotoğraf ve dosya; cihaza uygulama kurmadan, yalnızca sizin onayınızla. Dosyalar yerel ağdan gelir ve İndirilenler\QRPeek klasörüne kaydedilir, hiçbiri kendiliğinden açılmaz. Ayrıca: birden çok ekranda kodun hangi ekranda bulunduğu gösterilir; ana pencerede "Telefona gönder / al" düğmesi.")
 
 (0.1.0'da, ilk başvuruda, boş bırakılmıştı; Partner Center böyle istiyor.)
 
 **Ürün özellikleri** (en fazla 20, her biri ≤ 200 karakter)
 
-1. Tek kısayolla tüm ekranlarda QR kodu okuma, kamera gerekmez
-2. Ekrandaki birden fazla kodu aynı anda bulma
+1. Tek kısayolla tüm ekranlardaki QR kodlarını aynı anda okuma, kamera gerekmez
+2. QR yoksa ekrandaki yazıyı Windows'un kendi yazı tanımasıyla okuma ve kopyalama
 3. Kod bulunamazsa ekranı dondurup alan seçme
 4. Tarayıcıda küçülmüş yoğun kodları (e-Arşiv faturası) okuma
 5. Bağlantıyı açmadan gerçek hedefini görme
@@ -100,8 +104,8 @@ Açık kaynak: QRPeek GPL-3.0 lisanslı açık kaynak bir projedir ve kaynak kod
 9. e-Fatura / e-Arşiv QR'ını okuma ve Excel'e (CSV) aktarma
 10. Kopyalanan link, metin, dosya ve fotoğrafları telefona gönderme (yerel ağ, bulut yok)
 11. Telefondan ya da tabletten dosya alma: uygulama kurmadan, yalnızca sizin onayınızla
-12. Logolu, renkli ve desenli QR kodu oluşturma
-13. Oluşturulan kodun okunabilirliğini otomatik doğrulama
+12. Makbuz kartı: alanları seçip özet, Excel, CSV ya da özet QR olarak alma
+13. Logolu, renkli ve desenli QR kodu oluşturma; her kod otomatik doğrulanır
 14. PNG ve SVG olarak kaydetme, panoya kopyalama
 15. Görselden okuma: sürükle-bırak ya da Ctrl+V
 16. İsteğe bağlı ekranı izleme modu
@@ -134,7 +138,7 @@ Açık kaynak: QRPeek GPL-3.0 lisanslı açık kaynak bir projedir ve kaynak kod
 
 **Short description** (≤ 270 characters)
 
-> Read QR codes on your screen without a camera or phone, and create new ones. One shortcut scans every screen, shows where a link really goes, and swaps links and files with your phone. No account, no ads, no telemetry.
+> Read QR codes on your screen without a camera or phone, and create new ones. One shortcut scans every screen, shows where a link really goes, reads receipts that have no QR code, and swaps files with your phone. No account, no ads, no telemetry.
 
 **Description**
 
@@ -157,6 +161,8 @@ Receive from phone: a phone or tablet scans the QR code and picks files; the PC 
 
 QR generator: for text, links or Wi-Fi; color, pattern (square, rounded, dots), corner markers, and the QRPeek logo or your own in the middle. QRPeek reads every code back as you design it, so you never print a code that doesn't scan. PNG, SVG or clipboard.
 
+No QR? Text and receipts: if the area you pick has no QR code, its text is read on this PC with the text recognition built into Windows; fix it and copy it. If the text is a receipt or invoice, seller, number, date, items, tax and total come as separate fields. Tick the ones you want and copy a summary, export to Excel, save a CSV or make a summary QR any phone can read. Personal details start unticked; product keys and card numbers are masked and never get into any output.
+
 Optional watch mode: when a QR code appears in a presentation, meeting or video, a small pop-up shows up bottom-right.
 
 Your privacy stays yours: no account, no ads, no telemetry. Screen captures are processed in memory only, never saved or sent. When joining Wi-Fi, Windows may ask for location access; QRPeek uses it only to confirm the connection and never reads your location.
@@ -168,14 +174,16 @@ Open source: QRPeek is an open-source project under GPL-3.0, with its source cod
 
 **What's new in this version**
 
-> 0.2.0 — New: Receive from phone. Photos and files from a phone or tablet to the PC, with nothing to install on the device and only with your approval. Files come over your local network, are saved to Downloads\QRPeek and never open on their own. Also: with more than one screen, the result says which screen a code was on; the main window has a "Phone: send / receive" button.
+> 0.3.0 — New: receipts with no QR code. If the area you pick has no QR code, its text is read on this PC with Windows' own text recognition; receipts and invoices become a card with pickable fields (summary, Excel, CSV, summary QR). An editable receipt-terms list for other languages, and a new sectioned Settings window. Fixed: when a site blocks the automatic check of a shortened link, it now says so instead of "No redirects".
+
+(In 0.2.0: "New: Receive from phone. Photos and files from a phone or tablet to the PC, with nothing to install on the device and only with your approval. Files come over your local network, are saved to Downloads\QRPeek and never open on their own. Also: with more than one screen, the result says which screen a code was on; the main window has a "Phone: send / receive" button.")
 
 (Left empty in 0.1.0, the first submission, as Partner Center asks.)
 
 **Product features** (up to 20, each ≤ 200 characters)
 
-1. Read QR codes on every screen with one shortcut, no camera needed
-2. Find several codes on screen at once
+1. Read every QR code on every screen at once with one shortcut, no camera needed
+2. No QR? Read and copy the text on screen with Windows' own text recognition
 3. If nothing is found, freeze the screen and select the area
 4. Read dense codes shrunk by the browser (e.g. e-invoices)
 5. See a link's real destination without opening it
@@ -185,8 +193,8 @@ Open source: QRPeek is an open-source project under GPL-3.0, with its source cod
 9. Read Turkish e-invoice (e-Fatura / e-Arşiv) codes and export them to Excel (CSV)
 10. Send copied links, text, files and photos to your phone (local network, no cloud)
 11. Receive files from a phone or tablet: nothing to install, only with your approval
-12. Create QR codes with logos, colors and patterns
-13. Automatic readability check for every code you create
+12. Receipt card: pick fields and get a summary, Excel, CSV or a summary QR
+13. Create QR codes with logos, colors and patterns; every code is verified
 14. Save as PNG or SVG, copy to the clipboard
 15. Read from images: drag and drop or Ctrl+V
 16. Optional watch mode
@@ -219,11 +227,11 @@ Open source: QRPeek is an open-source project under GPL-3.0, with its source cod
 
 | Item | Size | Status |
 |---|---|---|
-| Screenshots (per language) | 1920×1080 PNG, 6 each (0.2.0): read a QR on a page + link card, receive from phone (QR + approval card), Wi-Fi + e-invoice cards, send to phone + main window, generator with logo, main window + privacy points | done (`build/store-assets/shots/tr-1..6.png`, `en-1..6.png`, not in git; in Partner Center, replace the old 5 and keep this order) |
+| Screenshots (per language) | 1920×1080 PNG, 7 each (0.3.0): read a QR on a page + link card, a receipt with no QR + receipt card, receive from phone (QR + approval card), Wi-Fi + e-invoice cards, send to phone + main window, generator with logo, main window + privacy points | done (`build/store-assets/shots/tr-1..7.png`, `en-1..7.png`, not in git; in Partner Center, replace the old 6 and keep this order) |
 | 1:1 box art (Store logo) | 1080×1080 PNG | done (`build/store-assets/box-1080x1080.png`) |
 | 2:3 poster art | 720×1080 PNG | done (`build/store-assets/poster-720x1080.png`) |
 | Store display tiles | 300×300, 150×150, 71×71 PNG | done (`build/store-assets/tile-*.png`) |
 
-Made by `tools/make-store-assets.ps1` from window captures in `build/store-assets/captures/<lang>/` (main, result, wifi, invoice, generator, send). Windows are placed 1:1, never scaled.
+Made by `tools/make-store-assets.ps1` from window captures in `build/store-assets/captures/<lang>/` (main, result, receipt, wifi, invoice, generator, send, receive-qr, receive-offer, plus `receipt-page.png`). Windows are placed 1:1, never scaled.
 
-Screenshot rule: **no real personal data and no other brands' logos.** Demo content only (example.com links, a made-up Wi-Fi network, a sample e-invoice), taken from an isolated copy of QRPeek's data folder.
+Screenshot rule: **no real personal data and no other brands' logos.** Demo content only (example.com links, a made-up Wi-Fi network, a sample e-invoice, a made-up receipt), taken from an isolated copy of QRPeek's data folder.

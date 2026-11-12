@@ -203,6 +203,8 @@ namespace QRPeek.Tests
         // was read right elsewhere and the number is a cell of its own.
         [InlineData("Claude Pro\t1\t$20.00\t2096\t$20.00\nVAT - Turkey (20% on $20.00)\t$4.00", "Claude Pro\t1\t$20.00\t20%\t$20.00\nVAT - Turkey (20% on $20.00)\t$4.00")]
         [InlineData("Ürün\t1\t₺100,00\t1896\t₺118,00\nKDV (%18)\t₺18,00", "Ürün\t1\t₺100,00\t18%\t₺118,00\nKDV (%18)\t₺18,00")] // Turkish "%18"
+        [InlineData("Team Plan\t1\t$30.00\t207/2\t$30.00\nVAT (20% on $30.00)\t$6.00", "Team Plan\t1\t$30.00\t20%\t$30.00\nVAT (20% on $30.00)\t$6.00")] // "%" read as "7/2"
+        [InlineData("Flat 207/2\t$30.00\nVAT 18%", "Flat 207/2\t$30.00\nVAT 18%")]                          // an address, no "20%"
         [InlineData("Valid until\t2096\nTax 20%", "Valid until\t2096\nTax 20%")]                // a year: no amount in its row
         [InlineData("Model 1096 X\t$5.00\nDiscount 10%", "Model 1096 X\t$5.00\nDiscount 10%")]  // not a cell of its own
         [InlineData("Year\t2096\t$1.00", "Year\t2096\t$1.00")]                                  // no "20%" anywhere

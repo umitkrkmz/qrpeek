@@ -163,6 +163,8 @@ namespace QRPeek.Tests
             // No "20%" anywhere else, but the cell sits under "Tax".
             Receipt r = ReceiptParser.Parse("Description\tQty\tUnit price\tTax\tAmount\nClaude Pro\t1\t$20.00\t2096\t$20.00\nTotal\t$24.00", ReceiptTerms.Default);
             Assert.Equal("Claude Pro · 1 · $20.00 · 20% · $20.00", V(r, "item"));
+            Receipt s = ReceiptParser.Parse("Description\tQty\tUnit price\tTax\tAmount\nTeam Plan\t1\t$30.00\t207/2\t$30.00\nTotal\t$36.00", ReceiptTerms.Default);
+            Assert.Equal("Team Plan · 1 · $30.00 · 20% · $30.00", V(s, "item")); // "%" read as "7/2"
             // Under "Amount" it stays a number.
             Receipt q = ReceiptParser.Parse("Description\tQty\tAmount\nWidget\t2096\t$20.00\nTotal\t$20.00", ReceiptTerms.Default);
             Assert.Equal("Widget · 2096 · $20.00", V(q, "item"));

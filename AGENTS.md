@@ -1,6 +1,6 @@
 # AGENTS.md
 
-For AI coding tools working in this repo. `README.md` is for users.
+For AI coding tools working in this repo. `README.md` (short) and the full guides `docs/README.tr.md` / `docs/README.en.md` are for users; keep the two guides in step when a feature changes.
 
 ## Ground rules
 
