@@ -26,12 +26,19 @@ namespace QRPeek.Core
         public static string Summary(Receipt r)
         {
             var sb = new StringBuilder(S.ReceiptSummaryTitle);
-            foreach (ReceiptField f in Picked(r)) sb.Append('\n').Append(S.ReceiptField(f.Field)).Append(": ").Append(f.Value.Trim());
+            foreach (ReceiptField f in Picked(r)) sb.Append('\n').Append(FieldName(f, r)).Append(": ").Append(f.Value.Trim());
             if (r.Currency != null && Picked(r).Any(f => ReceiptParser.Money.IsMatch(f.Value)))
                 sb.Append('\n').Append(S.ReceiptField("currency")).Append(": ").Append(r.Currency);
             sb.Append('\n').Append(S.NotOfficial);
             return sb.ToString().Replace("\n", Environment.NewLine);
         }
+
+        /// <summary>"Number (Receipt number)" when a receipt has several numbers or dates, so they can be told apart.</summary>
+        internal static string FieldName(ReceiptField f, Receipt r) =>
+            S.ReceiptField(f.Field) + (Ambiguous(f, r) ? " (" + f.Label + ")" : "");
+
+        internal static bool Ambiguous(ReceiptField f, Receipt r) =>
+            f.Label != null && (f.Field == "number" || f.Field == "date") && r.Fields.Count(x => x.Field == f.Field) > 1;
 
         private static string Value(Receipt r, string column)
         {

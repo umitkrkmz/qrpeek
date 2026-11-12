@@ -20,6 +20,9 @@ namespace QRPeek.Core
 
         /// <summary>The ReceiptTerms field: seller, number, date, total…</summary>
         public string Field { get; }
+
+        /// <summary>The label as printed on the receipt ("Receipt number"), when there was one.</summary>
+        public string Label { get; set; }
         public string Value { get; set; }
         public bool Selected { get; set; }
         /// <summary>About the buyer (name, e-mail, card): shown, but not picked unless the user ticks it.</summary>
@@ -70,6 +73,15 @@ namespace QRPeek.Core
             @"(?<![\p{L}\d])(?:[₺$€£]\s?\d{1,3}(?:[.,]\d{3})*[.,]\d{2}|\d{1,3}(?:[.,]\d{3})*[.,]\d{2}\s?(?:USD|EUR|GBP|TRY|TL|₺|€|£|\$)|(?:USD|EUR|GBP|TRY)\s?\d{1,3}(?:[.,]\d{3})*[.,]\d{2})(?:/\p{L}+)?",
             RegexOptions.CultureInvariant);
 
+        /// <summary>Fields a receipt can have several of: "Invoice number" and "Receipt number", "Date of issue" and "Date due".</summary>
+        private static readonly HashSet<string> MultiFields = new HashSet<string> { "number", "date" };
+
+        /// <summary>"Oct 26–Nov 26, 2026", "26 Eki – 26 Kas 2026".</summary>
+        private static readonly Regex Period = new Regex(
+            @"^(?:\p{L}{3,9}\.?\s\d{1,2}|\d{1,2}\s\p{L}{3,9}\.?)\s?[–—-]\s?(?:\p{L}{3,9}\.?\s\d{1,2}|\d{1,2}\s\p{L}{3,9}\.?),?\s\d{4}$");
+
+        private static string Plain(string s) => new string((s ?? "").Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant();
+
         private static readonly Regex Email = new Regex(@"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+");
         private static readonly Regex CardNumber = new Regex(@"(?<!\d)(?:\d[ -]?){13,19}(?!\d)");
         private static readonly Regex KeyLike = new Regex(@"\b[A-Z0-9]{5}(?:-[A-Z0-9]{5}){3,}\b");
@@ -83,21 +95,42 @@ namespace QRPeek.Core
                 .Where(r => r.Any(c => c.Length > 0))
                 .ToList();
 
-            var found = new Dictionary<string, string>();
+            var found = new List<ReceiptField>();
             var items = new List<string>();
             string seller = null;
             bool seenLabel = false;
             string[] header = null;
+            string[] headerText = null;
+
+            bool Has(string field) => found.Any(x => x.Field == field);
+            bool Taken(string field) => Has(field) && !MultiFields.Contains(field);
+            void Add(string field, string value, string label)
+            {
+                if (Taken(field)) return;
+                // The same number or date again (a payment table repeats them, a number
+                // cut in two lines repeats its start): keep the first.
+                string n = Plain(value);
+                if (found.Any(x => x.Field == field && (Plain(x.Value).StartsWith(n) || n.StartsWith(Plain(x.Value))))) return;
+                found.Add(new ReceiptField(field, value) { Label = label });
+            }
 
             for (int r = 0; r < rows.Count; r++)
             {
                 string[] cells = rows[r];
+
+                // "Oct 26–Nov 26, 2026" on a line of its own: a billing period.
+                if (cells.Length == 1 && !Has("period") && Period.IsMatch(cells[0]))
+                {
+                    Add("period", cells[0], null);
+                    continue;
+                }
 
                 // A table header: several cells that are nothing but labels, no amounts.
                 string[] fieldsHere = cells.Select(c => terms.StartsWithTerm(c, out string f, out int len) && len >= c.TrimEnd(':').Length ? f : null).ToArray();
                 if (fieldsHere.Count(f => f != null && TableFields.Contains(f)) >= 2 && !cells.Any(c => Money.IsMatch(c)))
                 {
                     header = fieldsHere;
+                    headerText = cells;
                     seenLabel = true;
                     continue;
                 }
@@ -110,7 +143,9 @@ namespace QRPeek.Core
                     bool lastPriced = items.Count > 0 && Money.IsMatch(items[items.Count - 1]);
                     if (cells.Length > 1)
                     {
-                        items.Add(string.Join(" · ", cells.Where(c => c.Length > 0)));
+                        // Under a "Tax" column, "2096" is the OCR's "20%".
+                        string[] row = cells.Select((c, i) => header.Length == cells.Length && header[i] == "tax" ? OcrLayout.PercentUnderTax(c) : c).ToArray();
+                        items.Add(string.Join(" · ", row.Where(c => c.Length > 0)));
                         continue;
                     }
                     if (items.Count > 0 && !lastPriced)
@@ -132,9 +167,9 @@ namespace QRPeek.Core
                     for (int c = 0; c < cells.Length && c < header.Length; c++)
                     {
                         string f = header[c];
-                        if (f == null || cells[c].Length == 0 || found.ContainsKey(f)) continue;
+                        if (f == null || cells[c].Length == 0 || Taken(f)) continue;
                         if (MoneyFields.Contains(f) && !Money.IsMatch(cells[c])) continue;
-                        found[f] = cells[c];
+                        Add(f, cells[c], headerText[c]);
                     }
                     continue;
                 }
@@ -151,7 +186,8 @@ namespace QRPeek.Core
                     }
                     seenLabel = true;
                     if (field == "buyer" && c > 0 && seller == null && LooksLikeName(cells[0])) seller = cells[0];
-                    if (field == "document" || found.ContainsKey(field)) continue;
+                    if (field == "document" || Taken(field)) continue;
+                    string label = cells[c].Substring(0, Math.Min(len, cells[c].Length)).Trim();
 
                     string rest = cells[c].Substring(Math.Min(len, cells[c].Length)).Trim().TrimStart(':', '-', '–').Trim();
                     string value;
@@ -172,13 +208,13 @@ namespace QRPeek.Core
                         if (string.IsNullOrWhiteSpace(value)) continue;
                         if ((field == "number" || field == "date" || field == "taxid") && !value.Any(char.IsDigit)) continue;
                     }
-                    found[field] = value;
+                    Add(field, value, label);
                     if (MoneyFields.Contains(field)) break; // the rest of the row was this value
                 }
             }
 
             // "(₺30,00 tutarında KDV dahil)": tax mentioned inside a sentence.
-            if (!found.ContainsKey("tax"))
+            if (!Has("tax"))
             {
                 foreach (string[] cells in rows)
                 {
@@ -187,22 +223,16 @@ namespace QRPeek.Core
                     if (!m.Success || !terms.Mentions(row, "tax")) continue;
                     // "Total (incl. VAT) $24.00" is the total, not the tax.
                     if (terms.StartsWithTerm(cells[0], out string f0, out _) && (f0 == "total" || f0 == "subtotal")) continue;
-                    found["tax"] = m.Value;
+                    Add("tax", m.Value, null);
                     break;
                 }
             }
 
             var receipt = new Receipt();
-            if (seller != null) found["seller"] = seller;
-            foreach (string field in Order)
-            {
-                if (field == "item")
-                {
-                    foreach (string it in items) receipt.Fields.Add(new ReceiptField("item", it));
-                    continue;
-                }
-                if (found.TryGetValue(field, out string v)) receipt.Fields.Add(new ReceiptField(field, v));
-            }
+            if (seller != null) Add("seller", seller, null);
+            foreach (string it in items) found.Add(new ReceiptField("item", it));
+            // Card order; several numbers or dates keep the order they had on the receipt.
+            foreach (string field in Order) receipt.Fields.AddRange(found.Where(f => f.Field == field));
             foreach (ReceiptField f in receipt.Fields)
             {
                 f.Secret = f.Field == "secret" || KeyLike.IsMatch(f.Value) || IsCardNumber(f.Value);

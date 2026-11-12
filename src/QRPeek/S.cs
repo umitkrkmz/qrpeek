@@ -63,6 +63,7 @@ namespace QRPeek
         // Receipt card
         public static string ReceiptTitle => T("Makbuz", "Receipt");
         public static string ReceiptFound => T("QR kodu yok, makbuz okundu", "No QR code, a receipt was read");
+        public static string FullText => T("Tam metin", "Full text");
         public static string ReceiptCheck => T("Yazı tanımayla okundu; değerleri kontrol edin, gerekirse düzeltin. Yalnızca işaretli alanlar kopyalanır, CSV'ye ve QR'a girer.",
                                                "Read with text recognition: check the values and fix them if needed. Only ticked fields are copied, saved to CSV or put in the QR.");
         public static string Personal => T("kişisel", "personal");

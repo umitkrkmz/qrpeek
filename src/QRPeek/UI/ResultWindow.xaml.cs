@@ -39,8 +39,27 @@ namespace QRPeek.UI
                 // A receipt or invoice: its fields first, the full text below.
                 Receipt receipt = ReceiptParser.Parse(ocrText, ReceiptTerms.Current);
                 Heading.Text = receipt != null ? S.ReceiptFound : S.NoQrButText;
-                if (receipt != null) Items.Children.Add(ReceiptCard(receipt));
-                Items.Children.Add(TextCard(ocrText));
+                UIElement text = TextCard(ocrText, showTitle: receipt == null);
+                if (receipt == null)
+                {
+                    Items.Children.Add(text);
+                }
+                else
+                {
+                    // Two tabs instead of two long cards one under the other.
+                    UIElement card = ReceiptCard(receipt);
+                    var tabs = new WrapPanel { Margin = new Thickness(0, 0, 0, 10) };
+                    var tabReceipt = new RadioButton { Style = (Style)FindResource("Pill"), GroupName = "OcrTabs", Content = S.ReceiptTitle, IsChecked = true };
+                    var tabText = new RadioButton { Style = (Style)FindResource("Pill"), GroupName = "OcrTabs", Content = S.FullText };
+                    tabReceipt.Checked += (s, e) => { card.Visibility = Visibility.Visible; text.Visibility = Visibility.Collapsed; };
+                    tabText.Checked += (s, e) => { card.Visibility = Visibility.Collapsed; text.Visibility = Visibility.Visible; };
+                    tabs.Children.Add(tabReceipt);
+                    tabs.Children.Add(tabText);
+                    text.Visibility = Visibility.Collapsed;
+                    Items.Children.Add(tabs);
+                    Items.Children.Add(card);
+                    Items.Children.Add(text);
+                }
             }
             else if (texts.Count == 0)
             {
@@ -159,10 +178,7 @@ namespace QRPeek.UI
             }
 
             var stack = new StackPanel();
-            var kind = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 6) };
-            kind.Children.Add(new TextBlock { Text = "", Style = (Style)FindResource("Icon"), FontSize = 14, Foreground = (Brush)FindResource("Accent"), Margin = new Thickness(0, 0, 8, 0) });
-            kind.Children.Add(new TextBlock { Text = S.ReceiptTitle, FontWeight = FontWeights.SemiBold, FontSize = 13 });
-            stack.Children.Add(kind);
+            // No title: the card always sits under the tabs, which already say "Receipt".
             stack.Children.Add(new TextBlock { Text = S.ReceiptCheck, Style = (Style)FindResource("Muted"), Foreground = (Brush)FindResource("Warn"), Margin = new Thickness(0, 0, 0, 8) });
 
             var grid = new Grid();
@@ -185,8 +201,13 @@ namespace QRPeek.UI
                 };
                 var label = new TextBlock { VerticalAlignment = VerticalAlignment.Center, FontSize = 12.5, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 8, 4) };
                 label.Inlines.Add(new Run(S.ReceiptField(f.Field)));
-                if (f.Personal || f.Secret)
-                    label.Inlines.Add(new Run(Environment.NewLine + (f.Secret ? S.NotSelectable : S.Personal)) { Foreground = (Brush)FindResource("FgMuted"), FontSize = 11 });
+                // Under the name: which one ("Receipt number") when there are several, and why it isn't ticked.
+                var notes = new List<string>();
+                if (ReceiptExport.Ambiguous(f, r)) notes.Add(f.Label);
+                if (f.Secret) notes.Add(S.NotSelectable);
+                else if (f.Personal) notes.Add(S.Personal);
+                if (notes.Count > 0)
+                    label.Inlines.Add(new Run(Environment.NewLine + string.Join(" · ", notes)) { Foreground = (Brush)FindResource("FgMuted"), FontSize = 11 });
                 var value = new TextBox { Text = f.Display, IsReadOnly = f.Secret, FontSize = 13, Padding = new Thickness(5, 2, 5, 2), Margin = new Thickness(0, 0, 0, 4), TextWrapping = TextWrapping.Wrap };
                 if (!f.Secret) value.TextChanged += (s, e) => f.Value = value.Text;
                 Grid.SetRow(cb, row); Grid.SetColumn(cb, 0);
@@ -197,7 +218,8 @@ namespace QRPeek.UI
                 grid.Children.Add(value);
                 row++;
             }
-            stack.Children.Add(grid);
+            // The list scrolls on its own; the buttons under it stay in view.
+            stack.Children.Add(new ScrollViewer { Content = grid, MaxHeight = 290, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Padding = new Thickness(0, 0, 4, 0) });
 
             var actions = new WrapPanel { Margin = new Thickness(0, 8, 0, 0) };
             Button copy = ActionButton("", S.CopySummary, primary: true);
@@ -233,13 +255,13 @@ namespace QRPeek.UI
         /// copy button. Never copied on its own and never written to history:
         /// the text may be anything on the user's screen.
         /// </summary>
-        private UIElement TextCard(string text)
+        private UIElement TextCard(string text, bool showTitle = true)
         {
             var stack = new StackPanel();
             var kind = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 8) };
             kind.Children.Add(new TextBlock { Text = KindIcon(ContentKind.Text), Style = (Style)FindResource("Icon"), FontSize = 14, Foreground = (Brush)FindResource("Accent"), Margin = new Thickness(0, 0, 8, 0) });
             kind.Children.Add(new TextBlock { Text = S.OcrKind, FontWeight = FontWeights.SemiBold, FontSize = 13 });
-            stack.Children.Add(kind);
+            if (showTitle) stack.Children.Add(kind);
 
             // Columns come tab-separated; a tab jumps to the next tab stop and looks
             // like a hole in most places, so show (and copy) three spaces instead.

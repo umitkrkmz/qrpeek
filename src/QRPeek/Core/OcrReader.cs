@@ -104,7 +104,7 @@ namespace QRPeek.Core
             // Words only another size or language saw, where the winner has nothing.
             foreach (Reading other in readings.Where(r => r != best).OrderBy(r => r.Engine == best.Engine ? 0 : 1))
                 merged = OcrLayout.FillGaps(merged, other.Words, sameLanguage: other.Engine == best.Engine, terms.IsLabelWord);
-            return terms.Polish(OcrLayout.Rows(merged));
+            return OcrLayout.FixPercents(terms.Polish(OcrLayout.Rows(merged)));
         }
 
         private sealed class Reading

@@ -39,6 +39,47 @@ namespace QRPeek.Core
         /// <summary>A horizontal gap wider than this many text heights separates columns, not words.</summary>
         private const float ColumnGap = 1.6f;
 
+        private static readonly Regex PercentSeen = new Regex(@"(?<!\d)(\d{1,2})\s?%|%\s?(\d{1,2})(?!\d)", RegexOptions.CultureInvariant);
+        private static readonly Regex PercentAs96 = new Regex(@"^(\d{1,2})96$", RegexOptions.CultureInvariant);
+
+        /// <summary>
+        /// Windows OCR often reads "%" as "96", so a table's "20%" came out as "2096".
+        /// That is only undone with two cues together: the cell is nothing but that
+        /// number in a row that also has an amount (a table row, not a year or a model
+        /// name), and the same percent is read correctly somewhere else ("VAT (20% on
+        /// $20.00)"). Without both, the number stays as it was.
+        /// </summary>
+        internal static string FixPercents(string text)
+        {
+            var seen = new HashSet<string>(PercentSeen.Matches(text).Cast<Match>()
+                .Select(m => m.Groups[1].Success ? m.Groups[1].Value : m.Groups[2].Value));
+            if (seen.Count == 0) return text;
+
+            string[] lines = text.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            for (int l = 0; l < lines.Length; l++)
+            {
+                string[] cells = lines[l].Split('\t');
+                if (cells.Length < 2 || !cells.Any(c => ReceiptParser.Money.IsMatch(c))) continue;
+                bool changed = false;
+                for (int c = 0; c < cells.Length; c++)
+                {
+                    Match m = PercentAs96.Match(cells[c].Trim());
+                    if (!m.Success || !seen.Contains(m.Groups[1].Value)) continue;
+                    cells[c] = m.Groups[1].Value + "%";
+                    changed = true;
+                }
+                if (changed) lines[l] = string.Join("\t", cells);
+            }
+            return string.Join(Environment.NewLine, lines);
+        }
+
+        /// <summary>A cell under a tax column that reads "2096": the OCR's "20%".</summary>
+        internal static string PercentUnderTax(string cell)
+        {
+            Match m = PercentAs96.Match(cell.Trim());
+            return m.Success ? m.Groups[1].Value + "%" : cell;
+        }
+
         public static string Rows(IEnumerable<OcrWord> words)
         {
             var rows = new List<List<OcrWord>>();

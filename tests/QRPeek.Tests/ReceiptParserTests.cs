@@ -91,6 +91,36 @@ namespace QRPeek.Tests
         }
 
         [Fact]
+        public void Keeps_every_number_and_date_with_its_own_label_and_finds_the_period()
+        {
+            Receipt r = ReceiptParser.Parse(Anthropic, ReceiptTerms.Default);
+            var numbers = r.Fields.Where(f => f.Field == "number").ToList();
+            Assert.Equal(new[] { "PWZPIPZQ-0006", "2843-7979-5973" }, numbers.Select(f => f.Value));
+            Assert.Equal(new[] { "Invoice number", "Receipt number" }, numbers.Select(f => f.Label));
+            // The payment table repeats the date and the receipt number (cut in two lines): not again.
+            Assert.Single(r.Fields, f => f.Field == "date");
+            Assert.Equal("Date paid", r["date"].Label);
+            Assert.Equal("Oct 26-Nov 26, 2026", V(r, "period"));
+
+            S.Init("en");
+            string summary = ReceiptExport.Summary(r);
+            Assert.Contains("Number (Receipt number): 2843-7979-5973", summary);
+            Assert.Contains("Period: Oct 26-Nov 26, 2026", summary);
+            Assert.Contains("PWZPIPZQ-0006 | 2843-7979-5973", ReceiptExport.Tabbed(r)); // one CSV/Excel cell
+        }
+
+        [Fact]
+        public void A_96_under_the_tax_column_is_a_percent()
+        {
+            // No "20%" anywhere else, but the cell sits under "Tax".
+            Receipt r = ReceiptParser.Parse("Description\tQty\tUnit price\tTax\tAmount\nClaude Pro\t1\t$20.00\t2096\t$20.00\nTotal\t$24.00", ReceiptTerms.Default);
+            Assert.Equal("Claude Pro · 1 · $20.00 · 20% · $20.00", V(r, "item"));
+            // Under "Amount" it stays a number.
+            Receipt q = ReceiptParser.Parse("Description\tQty\tAmount\nWidget\t2096\t$20.00\nTotal\t$20.00", ReceiptTerms.Default);
+            Assert.Equal("Widget · 2096 · $20.00", V(q, "item"));
+        }
+
+        [Fact]
         public void Reads_a_turkish_receipt_with_the_price_on_its_own_line()
         {
             Receipt r = ReceiptParser.Parse(GooglePlay, ReceiptTerms.Default);

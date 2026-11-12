@@ -198,6 +198,19 @@ namespace QRPeek.Tests
             Assert.Equal("support@anthropic.com", OcrLayout.Rows(OcrLayout.PreferWellFormed(best2, other2)));
         }
 
+        [Theory]
+        // Windows OCR reads "%" as "96": "20%" → "2096". Fixed only when the same percent
+        // was read right elsewhere and the number is a cell of its own.
+        [InlineData("Claude Pro\t1\t$20.00\t2096\t$20.00\nVAT - Turkey (20% on $20.00)\t$4.00", "Claude Pro\t1\t$20.00\t20%\t$20.00\nVAT - Turkey (20% on $20.00)\t$4.00")]
+        [InlineData("Ürün\t1\t₺100,00\t1896\t₺118,00\nKDV (%18)\t₺18,00", "Ürün\t1\t₺100,00\t18%\t₺118,00\nKDV (%18)\t₺18,00")] // Turkish "%18"
+        [InlineData("Valid until\t2096\nTax 20%", "Valid until\t2096\nTax 20%")]                // a year: no amount in its row
+        [InlineData("Model 1096 X\t$5.00\nDiscount 10%", "Model 1096 X\t$5.00\nDiscount 10%")]  // not a cell of its own
+        [InlineData("Year\t2096\t$1.00", "Year\t2096\t$1.00")]                                  // no "20%" anywhere
+        public void Fixes_a_percent_read_as_96(string ocr, string expected)
+        {
+            Assert.Equal(expected.Replace("\n", "\r\n"), OcrLayout.FixPercents(ocr.Replace("\n", "\r\n")));
+        }
+
         [Fact]
         public void Keeps_close_lines_apart_and_paragraphs_as_they_are()
         {
